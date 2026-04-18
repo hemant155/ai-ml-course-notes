@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bayes Theorem Interactive</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0b0f;--bg2:#111318;--card:#1a1f2e;--border:#2a3044;
+    --accent:#6c63ff;--accent2:#00d4aa;--accent3:#ff6b6b;--accent4:#ffd93d;
+    --text:#e8eaf0;--text2:#9ca3b0;--text3:#5a6275;
+    --mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);}
+  header{text-align:center;padding:40px 20px 20px;}
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--accent2);border:1px solid var(--accent2);padding:4px 14px;border-radius:20px;margin-bottom:16px;}
+  h1{font-size:28px;font-weight:600;margin-bottom:8px;}
+  .sub{color:var(--text2);font-size:15px;}
+  .main{max-width:860px;margin:0 auto;padding:20px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:20px;}
+  .card.green{border-top:3px solid var(--accent2);}
+  .card.purple{border-top:3px solid var(--accent);}
+  .card.red{border-top:3px solid var(--accent3);}
+  .card-tag{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+  .card-tag.g{color:var(--accent2);}
+  .card-tag.r{color:var(--accent3);}
+  h2{font-size:18px;font-weight:600;margin-bottom:8px;}
+  p{color:var(--text2);font-size:15px;line-height:1.7;margin-bottom:12px;}
+  .slider-row{display:flex;align-items:center;gap:16px;margin:12px 0;}
+  .slider-label{font-family:var(--mono);font-size:12px;color:var(--text2);min-width:200px;}
+  input[type=range]{flex:1;accent-color:var(--accent);}
+  .slider-val{font-family:var(--mono);font-size:14px;color:var(--accent4);min-width:60px;text-align:right;}
+  .formula{font-family:var(--mono);background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-size:13px;color:var(--accent4);margin:12px 0;}
+  .result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:16px;}
+  .result-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;}
+  .result-label{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;}
+  .result-num{font-family:var(--mono);font-size:24px;font-weight:700;}
+  .result-num.green{color:var(--accent2);}
+  .result-num.red{color:var(--accent3);}
+  .result-num.yellow{color:var(--accent4);}
+  .result-num.purple{color:var(--accent);}
+
+  /* Visual bar */
+  .bar-wrap{margin:20px 0;}
+  .bar-label{font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:6px;}
+  .bar-bg{background:var(--border);border-radius:6px;height:28px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:6px;transition:width 0.4s ease;display:flex;align-items:center;padding-left:10px;}
+  .bar-fill span{font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;}
+
+  .analogy{background:rgba(108,99,255,0.08);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;font-size:14px;color:var(--text2);margin:12px 0;}
+  .analogy strong{color:var(--accent);}
+  .insight{background:rgba(255,217,61,0.06);border:1px solid rgba(255,217,61,0.2);border-radius:12px;padding:16px;margin-top:16px;font-size:14px;color:var(--text2);}
+  .insight strong{color:var(--accent4);}
+  footer{text-align:center;padding:30px;color:var(--text3);font-family:var(--mono);font-size:11px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="tag">PHASE 1 — PROBABILITY</div>
+  <h1>Bayes Theorem Interactive</h1>
+  <p class="sub">Prior + Evidence = Posterior — sliders se khelo aur dekho kya hota hai</p>
+</header>
+
+<div class="main">
+
+  <!-- Scenario selector -->
+  <div class="card purple">
+    <div class="card-tag">Scenario</div>
+    <h2>Choose your scenario</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button onclick="loadScenario('disease')" id="sc-disease" style="font-family:var(--mono);font-size:12px;padding:8px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff;">🏥 Disease Test</button>
+      <button onclick="loadScenario('spam')" id="sc-spam" style="font-family:var(--mono);font-size:12px;padding:8px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text2);">📧 Spam Filter</button>
+      <button onclick="loadScenario('custom')" id="sc-custom" style="font-family:var(--mono);font-size:12px;padding:8px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text2);">🎛️ Custom</button>
+    </div>
+    <p style="margin-top:14px;" id="scenario-desc">Ek disease test 99% accurate hai. Disease prevalence bahut low hai. Test positive aaye toh actual disease probability kya?</p>
+  </div>
+
+  <!-- Sliders -->
+  <div class="card green">
+    <div class="card-tag g">Input — Apne Values Set Karo</div>
+    <h2>Prior aur Evidence</h2>
+
+    <div class="slider-row">
+      <span class="slider-label" id="prior-label">P(Disease) — Prior probability</span>
+      <input type="range" min="1" max="500" value="10" id="sl-prior" oninput="calculate()">
+      <span class="slider-val" id="val-prior">1.0%</span>
+    </div>
+
+    <div class="slider-row">
+      <span class="slider-label" id="likelihood-label">P(Test+ | Disease) — Test accuracy</span>
+      <input type="range" min="50" max="100" value="99" id="sl-likelihood" oninput="calculate()">
+      <span class="slider-val" id="val-likelihood">99%</span>
+    </div>
+
+    <div class="slider-row">
+      <span class="slider-label" id="falsepos-label">P(Test+ | No Disease) — False positive rate</span>
+      <input type="range" min="1" max="500" value="10" id="sl-falsepos" oninput="calculate()">
+      <span class="slider-val" id="val-falsepos">1.0%</span>
+    </div>
+  </div>
+
+  <!-- Formula -->
+  <div class="card">
+    <div class="card-tag">Bayes Formula</div>
+    <div class="formula" id="formula-display">
+P(A|B) = P(B|A) × P(A) / P(B)
+
+P(Disease|Test+) = P(Test+|Disease) × P(Disease)
+                   ─────────────────────────────────
+                           P(Test+)
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="card red">
+    <div class="card-tag r">Result — Posterior Probability</div>
+    <h2 id="result-title">Agar test positive aaye — actual disease probability?</h2>
+
+    <div class="bar-wrap">
+      <div class="bar-label">POSTERIOR PROBABILITY</div>
+      <div class="bar-bg">
+        <div class="bar-fill" id="bar-posterior" style="width:0%;background:var(--accent3);">
+          <span id="bar-text">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-card">
+        <div class="result-label">PRIOR</div>
+        <div class="result-num purple" id="res-prior">1.0%</div>
+      </div>
+      <div class="result-card">
+        <div class="result-label">P(TEST+)</div>
+        <div class="result-num yellow" id="res-evidence">—</div>
+      </div>
+      <div class="result-card">
+        <div class="result-label">TRUE POSITIVES</div>
+        <div class="result-num green" id="res-tp">—</div>
+      </div>
+      <div class="result-card">
+        <div class="result-label">FALSE POSITIVES</div>
+        <div class="result-num red" id="res-fp">—</div>
+      </div>
+      <div class="result-card" style="grid-column:1/-1;border-color:var(--accent3);">
+        <div class="result-label">POSTERIOR P(Disease | Test+)</div>
+        <div class="result-num red" id="res-posterior" style="font-size:36px;">—</div>
+      </div>
+    </div>
+
+    <div class="insight" id="insight-box">
+      <strong>Insight:</strong> Sliders move karo aur dekho kaise posterior change hota hai!
+    </div>
+  </div>
+
+  <div class="analogy">
+    <strong>AI mein yeh kyun matter karta hai:</strong> Class imbalance problem! Agar 99% images cats hain aur 1% dogs — model "always predict cat" se 99% accuracy dega lekin dogs kabhi detect nahi karega. Bayes yeh samjhata hai ki prior (class distribution) hamesha consider karna chahiye. Isliye Precision aur Recall metrics hain!
+  </div>
+
+</div>
+<footer>Phase 1 — Probability & Statistics · Bayes Theorem Visualizer</footer>
+
+<script>
+const scenarios = {
+  disease: {
+    prior: 10, likelihood: 99, falsepos: 10,
+    priorLabel: 'P(Disease) — Disease prevalence',
+    likelihoodLabel: 'P(Test+ | Disease) — Test sensitivity',
+    falseposLabel: 'P(Test+ | No Disease) — False positive rate',
+    desc: 'Ek disease test 99% accurate hai. Disease prevalence bahut low hai. Test positive aaye toh actual disease probability kya? (Surprising answer aayega! 😮)',
+    resultTitle: 'Agar test positive aaye — actual disease probability?'
+  },
+  spam: {
+    prior: 100, likelihood: 95, falsepos: 20,
+    priorLabel: 'P(Spam) — Base spam rate',
+    likelihoodLabel: 'P(Word | Spam) — Word spam mein kitna common',
+    falseposLabel: 'P(Word | Not Spam) — Word normal email mein',
+    desc: '"FREE MONEY" word dekha — yeh email spam hone ki probability kya hai? Spam filter exactly yahi karta hai!',
+    resultTitle: '"FREE MONEY" dekha — spam probability?'
+  },
+  custom: {
+    prior: 200, likelihood: 80, falsepos: 100,
+    priorLabel: 'P(A) — Prior probability',
+    likelihoodLabel: 'P(B|A) — Likelihood',
+    falseposLabel: 'P(B|not A) — False positive rate',
+    desc: 'Apne custom values set karo aur dekho Bayes kaise kaam karta hai!',
+    resultTitle: 'P(A | B) — Posterior probability'
+  }
+};
+
+let activeScenario = 'disease';
+
+function loadScenario(name) {
+  activeScenario = name;
+  const sc = scenarios[name];
+  document.getElementById('sl-prior').value = sc.prior;
+  document.getElementById('sl-likelihood').value = sc.likelihood;
+  document.getElementById('sl-falsepos').value = sc.falsepos;
+  document.getElementById('prior-label').textContent = sc.priorLabel;
+  document.getElementById('likelihood-label').textContent = sc.likelihoodLabel;
+  document.getElementById('falsepos-label').textContent = sc.falseposLabel;
+  document.getElementById('scenario-desc').textContent = sc.desc;
+  document.getElementById('result-title').textContent = sc.resultTitle;
+
+  ['disease','spam','custom'].forEach(s => {
+    const btn = document.getElementById('sc-'+s);
+    btn.style.background = s===name ? 'var(--accent)' : 'var(--card)';
+    btn.style.color = s===name ? '#fff' : 'var(--text2)';
+    btn.style.borderColor = s===name ? 'var(--accent)' : 'var(--border)';
+  });
+  calculate();
+}
+
+function calculate() {
+  const priorRaw = parseFloat(document.getElementById('sl-prior').value);
+  const likelihoodRaw = parseFloat(document.getElementById('sl-likelihood').value);
+  const falseposRaw = parseFloat(document.getElementById('sl-falsepos').value);
+
+  const prior = priorRaw / 1000;
+  const likelihood = likelihoodRaw / 100;
+  const falsepos = falseposRaw / 1000;
+
+  document.getElementById('val-prior').textContent = (prior*100).toFixed(1) + '%';
+  document.getElementById('val-likelihood').textContent = likelihood.toFixed(0)*1 + '%';
+  document.getElementById('val-falsepos').textContent = (falsepos*100).toFixed(1) + '%';
+
+  // P(B) = P(B|A)*P(A) + P(B|notA)*P(notA)
+  const pB = likelihood * prior + falsepos * (1 - prior);
+  // True positives per 1000
+  const tp = (likelihood * prior * 1000).toFixed(1);
+  const fp = (falsepos * (1-prior) * 1000).toFixed(1);
+  // Posterior
+  const posterior = pB > 0 ? (likelihood * prior) / pB : 0;
+  const posteriorPct = (posterior * 100).toFixed(1);
+
+  document.getElementById('res-prior').textContent = (prior*100).toFixed(1)+'%';
+  document.getElementById('res-evidence').textContent = (pB*100).toFixed(2)+'%';
+  document.getElementById('res-tp').textContent = tp + '/1000';
+  document.getElementById('res-fp').textContent = fp + '/1000';
+  document.getElementById('res-posterior').textContent = posteriorPct + '%';
+
+  const barW = Math.min(100, parseFloat(posteriorPct));
+  document.getElementById('bar-posterior').style.width = barW + '%';
+  document.getElementById('bar-text').textContent = posteriorPct + '%';
+
+  const color = posterior < 0.3 ? 'var(--accent3)' : posterior < 0.7 ? 'var(--accent4)' : 'var(--accent2)';
+  document.getElementById('bar-posterior').style.background = color;
+  document.getElementById('res-posterior').style.color = color;
+
+  // Insight
+  let insight = '';
+  if (posterior < 0.15 && prior < 0.05) {
+    insight = `<strong>😮 Surprising!</strong> Test ${(likelihood*100).toFixed(0)}% accurate hai lekin positive result ka sirf <strong>${posteriorPct}%</strong> chance actual positive! Kyun? Prior bahut low tha (${(prior*100).toFixed(1)}%) — zyaadatar positives false positives hain. Yahi "base rate fallacy" hai!`;
+  } else if (posterior > 0.8) {
+    insight = `<strong>✅ Strong evidence!</strong> ${posteriorPct}% posterior probability — test ne strong evidence diya. Prior (${(prior*100).toFixed(1)}%) bhi reasonable tha.`;
+  } else {
+    insight = `<strong>📊 Result:</strong> Prior ${(prior*100).toFixed(1)}% tha. Evidence dekhne ke baad posterior ${posteriorPct}% ho gaya. Prior ko ${(posterior/prior).toFixed(1)}x update kiya evidence ne.`;
+  }
+  document.getElementById('insight-box').innerHTML = insight;
+}
+
+loadScenario('disease');
+</script>
+</body>
+</html>
