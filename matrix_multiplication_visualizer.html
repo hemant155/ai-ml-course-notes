@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrix Multiplication Visualizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0b0f;--bg2:#111318;--card:#1a1f2e;--border:#2a3044;--accent:#6c63ff;--accent2:#00d4aa;--accent3:#ff6b6b;--accent4:#ffd93d;--text:#e8eaf0;--text2:#9ca3b0;--text3:#5a6275;--mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);}
+  header{text-align:center;padding:40px 20px 20px;}
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--accent2);border:1px solid var(--accent2);padding:4px 14px;border-radius:20px;margin-bottom:16px;}
+  h1{font-size:28px;font-weight:600;margin-bottom:8px;}
+  .sub{color:var(--text2);font-size:15px;}
+  .main{max-width:900px;margin:0 auto;padding:20px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;}
+  .card-tag{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+  h2{font-size:18px;font-weight:600;margin-bottom:12px;}
+  p{color:var(--text2);font-size:15px;line-height:1.7;margin-bottom:10px;}
+
+  /* Mode tabs */
+  .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+  .tab{font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:8px 16px;border-radius:6px;cursor:pointer;border:1px solid var(--border);color:var(--text2);background:var(--card);text-transform:uppercase;transition:all 0.2s;}
+  .tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  /* Matrix display */
+  .matrices-wrap{display:flex;align-items:center;gap:16px;justify-content:center;flex-wrap:wrap;margin:20px 0;}
+  .matrix-block{text-align:center;}
+  .matrix-label{font-family:var(--mono);font-size:12px;color:var(--text3);margin-bottom:8px;}
+  .matrix-shape{font-family:var(--mono);font-size:11px;color:var(--text2);margin-top:6px;}
+  .matrix{display:inline-grid;border-left:2px solid var(--text3);border-right:2px solid var(--text3);padding:8px 12px;gap:4px;}
+  .matrix-cell{width:44px;height:36px;border-radius:6px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:var(--text2);transition:all 0.3s;}
+  .matrix-cell.highlight-row{background:rgba(108,99,255,0.2);border-color:var(--accent);color:var(--accent);}
+  .matrix-cell.highlight-col{background:rgba(0,212,170,0.2);border-color:var(--accent2);color:var(--accent2);}
+  .matrix-cell.result-active{background:rgba(255,217,61,0.2);border-color:var(--accent4);color:var(--accent4);}
+  .op-sign{font-size:28px;color:var(--text3);font-weight:300;}
+
+  /* Controls */
+  .controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0;}
+  .btn{font-family:var(--mono);font-size:12px;letter-spacing:1px;padding:10px 22px;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text2);transition:all 0.2s;text-transform:uppercase;}
+  .btn:hover{border-color:var(--accent);color:var(--accent);}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  /* Calculation display */
+  .calc-box{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;font-family:var(--mono);font-size:14px;color:var(--accent4);margin:16px 0;min-height:60px;line-height:1.8;}
+
+  /* AI mode */
+  .ai-scenario{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:16px 0;}
+  .ai-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;}
+  .ai-card-title{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:1px;margin-bottom:6px;}
+  .ai-card-val{font-size:14px;color:var(--text2);}
+
+  .analogy{background:rgba(108,99,255,0.08);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;font-size:14px;color:var(--text2);margin:12px 0;}
+  .analogy strong{color:var(--accent);}
+  footer{text-align:center;padding:30px;color:var(--text3);font-family:var(--mono);font-size:11px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="tag">PHASE 1 — LINEAR ALGEBRA</div>
+  <h1>Matrix Multiplication Visualizer</h1>
+  <p class="sub">Shapes samjho, dot products dekho, aur neural network layers ke saath connect karo</p>
+</header>
+
+<div class="main">
+
+  <div class="tabs">
+    <div class="tab active" onclick="setMode('basic')">Basic — Shape Rule</div>
+    <div class="tab" onclick="setMode('step')">Step by Step</div>
+    <div class="tab" onclick="setMode('ai')">AI Mode — Neural Layer</div>
+  </div>
+
+  <!-- BASIC MODE -->
+  <div id="mode-basic">
+    <div class="card">
+      <div class="card-tag">Shape Rule</div>
+      <h2>Matrix shapes — kab multiply ho sakti hain?</h2>
+      <p>Rule: <strong style="color:var(--accent4);">(A × B) × (B × C) = (A × C)</strong> — Inner dimensions must match!</p>
+
+      <div class="matrices-wrap">
+        <div class="matrix-block">
+          <div class="matrix-label">Matrix A</div>
+          <div id="shape-a-display" class="matrix" style="grid-template-columns:repeat(3,44px)">
+            <div class="matrix-cell highlight-row">a</div><div class="matrix-cell highlight-row">b</div><div class="matrix-cell highlight-row">c</div>
+            <div class="matrix-cell">d</div><div class="matrix-cell">e</div><div class="matrix-cell">f</div>
+          </div>
+          <div class="matrix-shape" id="shape-a-label">(2 × 3)</div>
+        </div>
+        <div class="op-sign">×</div>
+        <div class="matrix-block">
+          <div class="matrix-label">Matrix B</div>
+          <div id="shape-b-display" class="matrix" style="grid-template-columns:repeat(2,44px)">
+            <div class="matrix-cell highlight-col">p</div><div class="matrix-cell">q</div>
+            <div class="matrix-cell highlight-col">r</div><div class="matrix-cell">s</div>
+            <div class="matrix-cell highlight-col">t</div><div class="matrix-cell">u</div>
+          </div>
+          <div class="matrix-shape" id="shape-b-label">(3 × 2)</div>
+        </div>
+        <div class="op-sign">=</div>
+        <div class="matrix-block">
+          <div class="matrix-label">Result C</div>
+          <div id="shape-c-display" class="matrix" style="grid-template-columns:repeat(2,44px)">
+            <div class="matrix-cell result-active">c₁₁</div><div class="matrix-cell result-active">c₁₂</div>
+            <div class="matrix-cell result-active">c₂₁</div><div class="matrix-cell result-active">c₂₂</div>
+          </div>
+          <div class="matrix-shape" id="shape-c-label">(2 × 2) ✓</div>
+        </div>
+      </div>
+
+      <div class="calc-box">
+        ✅ (2×<span style="color:var(--accent3)">3</span>) × (<span style="color:var(--accent3)">3</span>×2) → Inner match karte hain!
+        Result shape: (2×2)
+
+        ❌ (2×3) × (2×3) → Inner match nahi (3 ≠ 2) → IMPOSSIBLE!
+      </div>
+
+      <div class="analogy">
+        <strong>Analogy:</strong> Ek row mein 3 elements hain — toh doosri matrix mein 3 rows chahiye. Jaise handshake — ek haath 3 ungliyan, doosre ko bhi 3 chahiye exactly. Yahi rule hai.
+      </div>
+    </div>
+
+    <!-- Shape presets -->
+    <div class="card">
+      <div class="card-tag">Try Different Shapes</div>
+      <h2>AI mein common shapes</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+        <button class="btn primary" onclick="showShape(784,256,256,10)">MNIST Layer</button>
+        <button class="btn" onclick="showShape(3,4,4,2)">Tiny Network</button>
+        <button class="btn" onclick="showShape(512,256,256,128)">Deep Layer</button>
+        <button class="btn" onclick="showShape(2,3,3,2)">2→3→2</button>
+      </div>
+      <div class="calc-box" id="shape-result">
+        Button click karo — shape calculation dikhegi!
+      </div>
+      <div id="ai-scenario" class="ai-scenario" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- STEP MODE -->
+  <div id="mode-step" style="display:none;">
+    <div class="card">
+      <div class="card-tag">Step by Step Multiplication</div>
+      <h2>C[i][j] = Row i of A · Column j of B</h2>
+      <p>Har output cell ek dot product hai. Dekho kaise calculate hota hai:</p>
+
+      <div class="matrices-wrap" id="step-matrices">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="controls">
+        <button class="btn" onclick="prevCell()">← Pehla Cell</button>
+        <button class="btn primary" onclick="nextCell()">Agla Cell →</button>
+        <button class="btn" onclick="resetStep()">↺ Reset</button>
+      </div>
+
+      <div class="calc-box" id="step-calc">Start button dabao!</div>
+    </div>
+  </div>
+
+  <!-- AI MODE -->
+  <div id="mode-ai" style="display:none;">
+    <div class="card">
+      <div class="card-tag">Neural Network Forward Pass</div>
+      <h2>Ek layer ka forward pass = matrix multiplication!</h2>
+      <p>Input batch × Weight matrix = Output. Yahi baar baar hota hai har layer mein.</p>
+
+      <div class="matrices-wrap">
+        <div class="matrix-block">
+          <div class="matrix-label" style="color:var(--accent2);">INPUT BATCH</div>
+          <div class="matrix" style="grid-template-columns:repeat(3,48px)">
+            <div class="matrix-cell" style="font-size:11px;">x₁₁</div><div class="matrix-cell" style="font-size:11px;">x₁₂</div><div class="matrix-cell" style="font-size:11px;">x₁₃</div>
+            <div class="matrix-cell" style="font-size:11px;">x₂₁</div><div class="matrix-cell" style="font-size:11px;">x₂₂</div><div class="matrix-cell" style="font-size:11px;">x₂₃</div>
+            <div class="matrix-cell" style="font-size:11px;">x₃₁</div><div class="matrix-cell" style="font-size:11px;">x₃₂</div><div class="matrix-cell" style="font-size:11px;">x₃₃</div>
+          </div>
+          <div class="matrix-shape" style="color:var(--accent2);">(batch=3, features=3)</div>
+        </div>
+        <div class="op-sign">×</div>
+        <div class="matrix-block">
+          <div class="matrix-label" style="color:var(--accent);">WEIGHTS</div>
+          <div class="matrix" style="grid-template-columns:repeat(4,44px)">
+            <div class="matrix-cell" style="font-size:11px;">w₁₁</div><div class="matrix-cell" style="font-size:11px;">w₁₂</div><div class="matrix-cell" style="font-size:11px;">w₁₃</div><div class="matrix-cell" style="font-size:11px;">w₁₄</div>
+            <div class="matrix-cell" style="font-size:11px;">w₂₁</div><div class="matrix-cell" style="font-size:11px;">w₂₂</div><div class="matrix-cell" style="font-size:11px;">w₂₃</div><div class="matrix-cell" style="font-size:11px;">w₂₄</div>
+            <div class="matrix-cell" style="font-size:11px;">w₃₁</div><div class="matrix-cell" style="font-size:11px;">w₃₂</div><div class="matrix-cell" style="font-size:11px;">w₃₃</div><div class="matrix-cell" style="font-size:11px;">w₃₄</div>
+          </div>
+          <div class="matrix-shape" style="color:var(--accent);">(in=3, out=4)</div>
+        </div>
+        <div class="op-sign">=</div>
+        <div class="matrix-block">
+          <div class="matrix-label" style="color:var(--accent4);">OUTPUT</div>
+          <div class="matrix" style="grid-template-columns:repeat(4,44px)">
+            <div class="matrix-cell result-active" style="font-size:11px;">h₁₁</div><div class="matrix-cell result-active" style="font-size:11px;">h₁₂</div><div class="matrix-cell result-active" style="font-size:11px;">h₁₃</div><div class="matrix-cell result-active" style="font-size:11px;">h₁₄</div>
+            <div class="matrix-cell result-active" style="font-size:11px;">h₂₁</div><div class="matrix-cell result-active" style="font-size:11px;">h₂₂</div><div class="matrix-cell result-active" style="font-size:11px;">h₂₃</div><div class="matrix-cell result-active" style="font-size:11px;">h₂₄</div>
+            <div class="matrix-cell result-active" style="font-size:11px;">h₃₁</div><div class="matrix-cell result-active" style="font-size:11px;">h₃₂</div><div class="matrix-cell result-active" style="font-size:11px;">h₃₃</div><div class="matrix-cell result-active" style="font-size:11px;">h₃₄</div>
+          </div>
+          <div class="matrix-shape" style="color:var(--accent4);">(batch=3, hidden=4)</div>
+        </div>
+      </div>
+
+      <div class="calc-box">
+(3 × 3) × (3 × 4) = (3 × 4)
+       ↑↑
+  inner match!
+
+Batch size (3) preserved ✓
+Features (3) → Hidden units (4) transformed ✓
+
+Phir bias add karo: + b (shape: 4)
+Phir activation: ReLU(output)
+      </div>
+
+      <div class="analogy">
+        <strong>Deep network mein yeh chain hoti hai:</strong><br>
+        Input (batch×784) × W₁(784×256) = H₁(batch×256)<br>
+        H₁(batch×256) × W₂(256×128) = H₂(batch×128)<br>
+        H₂(batch×128) × W₃(128×10) = Output(batch×10)<br><br>
+        Har layer ek transformation hai — data ek "space" se doosre mein jaata hai.
+      </div>
+    </div>
+  </div>
+
+</div>
+<footer>Phase 1 — Linear Algebra · Matrix Multiplication Visualizer</footer>
+
+<script>
+// Simple A (2x3) x B (3x2)
+const A = [[1,2,3],[4,5,6]];
+const B = [[7,8],[9,10],[11,12]];
+let stepIdx = 0;
+const results = [];
+// Precompute all result cells
+for(let i=0;i<2;i++) for(let j=0;j<2;j++){
+  let sum=0, terms=[];
+  for(let k=0;k<3;k++){sum+=A[i][k]*B[k][j];terms.push(`${A[i][k]}×${B[k][j]}`);}
+  results.push({i,j,sum,terms,rowA:i,colB:j});
+}
+
+function setMode(m){
+  ['basic','step','ai'].forEach(x=>{ document.getElementById('mode-'+x).style.display='none'; document.querySelector(`.tab[onclick="setMode('${x}')"]`).classList.remove('active'); });
+  document.getElementById('mode-'+m).style.display='block';
+  document.querySelector(`.tab[onclick="setMode('${m}')"]`).classList.add('active');
+  if(m==='step') renderStepMatrices();
+}
+
+function renderStepMatrices(){
+  const wrap = document.getElementById('step-matrices');
+  const r = results[stepIdx]||results[0];
+  let aHtml='',bHtml='',cHtml='';
+  for(let i=0;i<2;i++) for(let k=0;k<3;k++){
+    const cls = r&&r.rowA===i?'matrix-cell highlight-row':'matrix-cell';
+    aHtml+=`<div class="${cls}">${A[i][k]}</div>`;
+  }
+  for(let k=0;k<3;k++) for(let j=0;j<2;j++){
+    const cls = r&&r.colB===j?'matrix-cell highlight-col':'matrix-cell';
+    bHtml+=`<div class="${cls}">${B[k][j]}</div>`;
+  }
+  for(let i=0;i<2;i++) for(let j=0;j<2;j++){
+    const done = results.slice(0,stepIdx).some(x=>x.i===i&&x.j===j);
+    const active = r&&r.i===i&&r.j===j;
+    const cls = active?'matrix-cell result-active':done?'matrix-cell highlight-row':'matrix-cell';
+    const val = done?results.find(x=>x.i===i&&x.j===j).sum:(active?'?':'?');
+    cHtml+=`<div class="${cls}">${val}</div>`;
+  }
+  wrap.innerHTML = `
+    <div class="matrix-block"><div class="matrix-label">A (2×3)</div><div class="matrix" style="grid-template-columns:repeat(3,44px)">${aHtml}</div></div>
+    <div class="op-sign">×</div>
+    <div class="matrix-block"><div class="matrix-label">B (3×2)</div><div class="matrix" style="grid-template-columns:repeat(2,44px)">${bHtml}</div></div>
+    <div class="op-sign">=</div>
+    <div class="matrix-block"><div class="matrix-label">C (2×2)</div><div class="matrix" style="grid-template-columns:repeat(2,44px)">${cHtml}</div></div>`;
+}
+
+function nextCell(){
+  if(stepIdx>=results.length)return;
+  const r=results[stepIdx];
+  document.getElementById('step-calc').innerHTML =
+    `C[${r.i+1}][${r.j+1}] = Row ${r.i+1} of A · Col ${r.j+1} of B\n= ${r.terms.join(' + ')}\n= ${r.terms.map(t=>{const[a,b]=t.split('×');return a*b;}).join(' + ')}\n= <strong style="color:var(--accent4)">${r.sum}</strong>`;
+  stepIdx++;
+  renderStepMatrices();
+  if(stepIdx>=results.length) document.getElementById('step-calc').innerHTML+= '\n\n✅ Matrix multiplication complete!';
+}
+function prevCell(){if(stepIdx>0){stepIdx--;renderStepMatrices();document.getElementById('step-calc').textContent='';}}
+function resetStep(){stepIdx=0;renderStepMatrices();document.getElementById('step-calc').textContent='Start button dabao!';}
+
+function showShape(a,b,c,d){
+  const res = document.getElementById('shape-result');
+  const ai = document.getElementById('ai-scenario');
+  if(b!==c){
+    res.innerHTML = `❌ (${a}×${b}) × (${c}×${d})\nInner mismatch! ${b} ≠ ${c} — multiply IMPOSSIBLE`;
+    ai.style.display='none'; return;
+  }
+  res.innerHTML = `✅ (${a}×${b}) × (${c}×${d}) = (${a}×${d})\nInner match: ${b} === ${c} ✓\nResult shape: (${a} × ${d})`;
+  ai.style.display='grid';
+  let context='';
+  if(a===784) context='MNIST: 784 pixel features → '+d+' hidden units';
+  else if(a===512) context='Deep layer: '+a+' → '+d+' dimensional transformation';
+  else context='Custom: Input '+a+' features → '+d+' outputs';
+  ai.innerHTML = `
+    <div class="ai-card"><div class="ai-card-title">MATRIX A</div><div class="ai-card-val">Shape: (${a} × ${b})<br>e.g. Input/Activation</div></div>
+    <div class="ai-card"><div class="ai-card-title">MATRIX B (WEIGHTS)</div><div class="ai-card-val">Shape: (${c} × ${d})<br>Learnable parameters: ${c*d}</div></div>
+    <div class="ai-card"><div class="ai-card-title">OUTPUT</div><div class="ai-card-val">Shape: (${a} × ${d})<br>${context}</div></div>`;
+}
+</script>
+</body>
+</html>
