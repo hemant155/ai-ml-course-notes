@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 1: Math + Python Foundations — Hemant's AI Brain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0f;
+    --bg2: #111318;
+    --bg3: #181c25;
+    --card: #1a1f2e;
+    --border: #2a3044;
+    --accent: #6c63ff;
+    --accent2: #00d4aa;
+    --accent3: #ff6b6b;
+    --accent4: #ffd93d;
+    --text: #e8eaf0;
+    --text2: #9ca3b0;
+    --text3: #5a6275;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --display: 'Playfair Display', serif;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    position: relative;
+    padding: 80px 40px 60px;
+    text-align: center;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -100px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse at center, rgba(108,99,255,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .phase-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  h1.hero {
+    font-family: var(--display);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.2;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #fff 0%, #a8b4ff 50%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 16px;
+    color: var(--text2);
+    max-width: 560px;
+    margin: 0 auto 32px;
+  }
+
+  /* ─── NAV TABS ─── */
+  nav.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 0 20px 48px;
+    position: relative;
+    z-index: 1;
+  }
+  .tab-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--text2);
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .tab-btn:hover, .tab-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* ─── SECTIONS ─── */
+  .section { display: none; padding: 0 20px 80px; max-width: 960px; margin: 0 auto; position: relative; z-index: 1; }
+  .section.active { display: block; }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent-color, var(--accent));
+    border-radius: 16px 16px 0 0;
+  }
+  .card.green { --accent-color: var(--accent2); }
+  .card.red   { --accent-color: var(--accent3); }
+  .card.yellow{ --accent-color: var(--accent4); }
+
+  .card-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  h2.card-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  h3.sub {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--accent2);
+    margin: 24px 0 8px;
+  }
+  p { color: var(--text2); margin-bottom: 12px; font-size: 15px; }
+  p strong { color: var(--text); font-weight: 500; }
+
+  /* ─── ANALOGY BOX ─── */
+  .analogy {
+    background: rgba(108,99,255,0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 14px;
+    color: var(--text2);
+  }
+  .analogy span { color: var(--accent); font-weight: 500; }
+
+  /* ─── AI INTERNALS BOX ─── */
+  .ai-box {
+    background: rgba(0,212,170,0.06);
+    border: 1px solid rgba(0,212,170,0.25);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+  .ai-box-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .ai-box p { font-size: 14px; }
+
+  /* ─── CONNECTION BOX ─── */
+  .connect-box {
+    background: rgba(255,107,107,0.06);
+    border: 1px dashed rgba(255,107,107,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: var(--text2);
+  }
+  .connect-box .label { color: var(--accent3); font-family: var(--mono); font-size: 10px; letter-spacing: 2px; display: block; margin-bottom: 6px; }
+
+  /* ─── FORMULA BLOCK ─── */
+  .formula {
+    font-family: var(--mono);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--accent4);
+    margin: 12px 0;
+    overflow-x: auto;
+  }
+
+  /* ─── IMPORTANT Q ─── */
+  .iq {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: rgba(255,217,61,0.05);
+    border: 1px solid rgba(255,217,61,0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .iq .q-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent4);
+    min-width: 28px;
+    margin-top: 2px;
+  }
+  .iq p { margin: 0; font-size: 14px; color: var(--text2); }
+  .iq p strong { color: var(--accent4); }
+
+  /* ─── STEPS ─── */
+  .steps { list-style: none; }
+  .steps li {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+  .step-num {
+    min-width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-num.green { background: var(--accent2); color: #000; }
+  .step-content h4 { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .step-content p { font-size: 14px; margin: 0; }
+
+  /* ─── PHASE CONNECTOR ─── */
+  .phase-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent3);
+    border: 1px solid rgba(255,107,107,0.3);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin: 4px 4px 4px 0;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .phase-link:hover { background: rgba(255,107,107,0.1); }
+
+  /* ─── GRID ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:640px){ .grid-2{ grid-template-columns:1fr; } }
+
+  .mini-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .mini-card h4 { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .mini-card p { font-size: 13px; margin: 0; }
+
+  /* ─── EXAM SECTION ─── */
+  .exam-card {
+    background: linear-gradient(135deg, #1a1025 0%, #1a2030 100%);
+    border: 1px solid rgba(108,99,255,0.4);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+  .difficulty-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+  .easy { background: rgba(0,212,170,0.15); color: var(--accent2); border: 1px solid rgba(0,212,170,0.3); }
+  .medium { background: rgba(255,217,61,0.15); color: var(--accent4); border: 1px solid rgba(255,217,61,0.3); }
+  .hard { background: rgba(255,107,107,0.15); color: var(--accent3); border: 1px solid rgba(255,107,107,0.3); }
+
+  .exam-q {
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .reveal-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--accent);
+    background: rgba(108,99,255,0.1);
+    border: 1px solid rgba(108,99,255,0.3);
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .reveal-btn:hover { background: var(--accent); color: #fff; }
+  .answer {
+    display: none;
+    margin-top: 16px;
+    padding: 16px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--text2);
+    border-left: 3px solid var(--accent2);
+  }
+  .answer.visible { display: block; }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ─── FOOTER ─── */
+  footer { text-align: center; padding: 40px; color: var(--text3); font-size: 13px; font-family: var(--mono); border-top: 1px solid var(--border); margin-top: 40px; }
+
+  /* animations */
+  @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  .section.active { animation: fadeIn 0.3s ease; }
+
+  /* tag pills */
+  .tag { display:inline-block; font-size:12px; font-family:var(--mono); padding:2px 10px; border-radius:4px; margin:2px; background:var(--bg3); border:1px solid var(--border); color:var(--text2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="phase-tag">✓ Phase 1 — Complete</div>
+  <h1 class="hero">Math + Python<br>Foundations</h1>
+  <p class="hero-sub">AI ke andar kya hota hai — ek honest, deep, Hinglish breakdown. Sirf formulas nahi, <em>kyun</em> bhi.</p>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" onclick="show('overview')">Overview</button>
+  <button class="tab-btn" onclick="show('linalg')">Linear Algebra</button>
+  <button class="tab-btn" onclick="show('calculus')">Calculus & Optimization</button>
+  <button class="tab-btn" onclick="show('prob')">Probability & Stats</button>
+  <button class="tab-btn" onclick="show('connections')">How It All Connects</button>
+  <button class="tab-btn" onclick="show('exam')">Test & Exam Questions</button>
+</nav>
+
+<!-- ═══════════════════════════════════ OVERVIEW ═══════════════════════════════════ -->
+<section id="overview" class="section active">
+
+  <div class="card">
+    <div class="card-tag">The Big Picture</div>
+    <h2 class="card-title">Phase 1 ka ek liner kya hai?</h2>
+    <p>AI ek glorified <strong>math machine</strong> hai. Jab bhi koi model kuch "seekhta" hai — woh actually numbers ko adjust kar raha hota hai. Phase 1 mein humne wahi language seekhi jisme AI bolta hai.</p>
+    <div class="analogy">
+      <span>Analogy:</span> Jaise English seekhne ke liye alphabets chahiye, AI samajhne ke liye Linear Algebra, Calculus aur Probability — yeh teeno alphabets hain. Inke bina tum sirf "user" rahoge, kabhi "builder" nahi banoge.
+    </div>
+    <div class="grid-2" style="margin-top:20px">
+      <div class="mini-card">
+        <h4>📐 Linear Algebra</h4>
+        <p>Data ko represent karna — vectors, matrices, transformations. AI ka <em>data language</em>.</p>
+      </div>
+      <div class="mini-card">
+        <h4>∂ Calculus & Optimization</h4>
+        <p>Model kaise seekhta hai — gradients, slopes, minimizing loss. AI ka <em>learning engine</em>.</p>
+      </div>
+      <div class="mini-card">
+        <h4>🎲 Probability & Stats</h4>
+        <p>Uncertainty handle karna — Bayes, distributions, inference. AI ka <em>decision brain</em>.</p>
+      </div>
+      <div class="mini-card">
+        <h4>🐍 Python</h4>
+        <p>Inhe code mein likhna — NumPy, plotting, implementations. AI ka <em>hands</em>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card green">
+    <div class="card-tag">AI Steps at a Glance</div>
+    <h2 class="card-title">Jab AI kuch karta hai — andar kya hota hai?</h2>
+    <ul class="steps">
+      <li>
+        <span class="step-num">1</span>
+        <div class="step-content">
+          <h4>Data → Vectors (Linear Algebra)</h4>
+          <p>Image, text, audio — sab kuch numbers ka matrix ban jaata hai. Ek 28×28 image = 784-dimensional vector.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-num">2</span>
+        <div class="step-content">
+          <h4>Forward Pass — Prediction karo</h4>
+          <p>Input vector multiply hoti hai weight matrices se. Dot products aur transformations hote hain. Output milta hai — ek prediction.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-num">3</span>
+        <div class="step-content">
+          <h4>Loss — Kitna galat tha? (Calculus)</h4>
+          <p>Cross-entropy ya MSE jaisi loss function calculate karti hai kitna error tha prediction mein.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-num">4</span>
+        <div class="step-content">
+          <h4>Backward Pass — Blame karo (Chain Rule)</h4>
+          <p>Calculus ka chain rule use hokar every weight ko bataya jaata hai — "tu kitna responsible tha is galti mein?"</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-num green">5</span>
+        <div class="step-content">
+          <h4>Update — Seekho (Gradient Descent)</h4>
+          <p>Weights ko thoda adjust karo gradient ke opposite direction mein. Baar baar repeat karo — model improve hota jaata hai.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card yellow">
+    <div class="card-tag">Important Questions</div>
+    <h2 class="card-title">Sochne wali baatein</h2>
+    <div class="iq">
+      <span class="q-num">Q1</span>
+      <p>Inference (prediction time) mein <strong>backward pass kyun nahi hota?</strong> Weights already trained hain — unhe change karne ki zaroorat nahi.</p>
+    </div>
+    <div class="iq">
+      <span class="q-num">Q2</span>
+      <p>Agar learning rate bahut zyada ho toh kya hoga? <strong>Overshooting aur divergence</strong> — loss kam hone ki jagah bounce karne lagega.</p>
+    </div>
+    <div class="iq">
+      <span class="q-num">Q3</span>
+      <p>Cross-entropy aur MSE mein difference kya hai? <strong>Cross-entropy classification ke liye</strong> (probability outputs), <strong>MSE regression ke liye</strong> (continuous values).</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════ LINEAR ALGEBRA ═══════════════════════════════════ -->
+<section id="linalg" class="section">
+
+  <div class="card">
+    <div class="card-tag">Linear Algebra</div>
+    <h2 class="card-title">Vectors aur Matrices — AI ka Data Language</h2>
+    <p>AI hamesha numbers se baat karta hai. Ek image, ek word, ek user profile — sab kuch ek <strong>vector</strong> ban jaata hai. Linear algebra is duniya ka grammar hai.</p>
+
+    <h3 class="sub">🔹 Vector kya hai?</h3>
+    <p>Ek vector ek direction + magnitude hai. AI mein: ek data point ya feature set. Jaise ek user ka feature vector ho sakta hai: <code>[age, salary, purchase_history]</code>.</p>
+    <div class="formula">v = [2, 5, 8]  ← ek 3-dimensional vector</div>
+
+    <h3 class="sub">🔹 Dot Product — Similarity ka measure</h3>
+    <p>Do vectors ka dot product batata hai kitne <strong>aligned</strong> hain woh. AI mein yeh similarity measure hai — attention mechanism, recommendation systems, sab jagah use hota hai.</p>
+    <div class="formula">a · b = a₁b₁ + a₂b₂ + ... + aₙbₙ</div>
+    <div class="analogy"><span>Analogy:</span> Agar dono vectors same direction mein hain, dot product bada hoga. Perpendicular hain toh 0. Opposite direction mein toh negative. Exactly jaise two people ke opinions kitne similar hain.</div>
+
+    <div class="ai-box">
+      <div class="ai-box-title">🧠 AI Andar Kya Karta Hai</div>
+      <p>Neural network mein <strong>har neuron basically ek dot product karta hai</strong> — input vector ko weight vector ke saath multiply karta hai. Phir ek activation function lagate hain. Yahi "neuron fire karna" hai.</p>
+      <div class="formula">output = activation(W · x + b)</div>
+      <p>W = weight vector, x = input vector, b = bias, activation = non-linearity (ReLU, sigmoid, etc.)</p>
+    </div>
+
+    <h3 class="sub">🔹 Cosine Similarity</h3>
+    <p>Dot product magnitude se independent version. Sirf direction matter karti hai. Word embeddings mein "king" aur "queen" close hote hain cosine similarity mein.</p>
+    <div class="formula">cos(θ) = (a · b) / (|a| × |b|)</div>
+
+    <div class="iq">
+      <span class="q-num">Q</span>
+      <p><strong>Dot product aur cosine similarity mein kab kya use karein?</strong> Jab magnitude bhi important ho (jaise energy) toh dot product. Sirf direction/similarity compare karni ho (jaise word embeddings) toh cosine similarity.</p>
+    </div>
+
+    <h3 class="sub">🔹 Matrix Multiplication — Transformation</h3>
+    <p>Neural network ke ek layer se doosre layer mein jaana = ek matrix multiplication. Data ek "space" se doosre "space" mein transform hota hai.</p>
+    <div class="formula">Y = W × X + b
+W: weight matrix (n_out × n_in)
+X: input matrix (n_in × batch_size)
+Y: output matrix (n_out × batch_size)</div>
+
+    <div class="ai-box">
+      <div class="ai-box-title">🧠 Deep Network mein kya hota hai</div>
+      <p>Ek deep neural network basically <strong>multiple matrix multiplications in sequence</strong> hai, har layer ke beech ek non-linear activation function ke saath. Yeh transformations data ko aise "space" mein le jaate hain jahan patterns clearly separable ho jaate hain.</p>
+    </div>
+
+    <div class="connect-box">
+      <span class="label">🔗 Phase 2 & 3 Connection</span>
+      PCA (Phase 2) mein — eigenvectors aur eigenvalues use hote hain. Attention mechanism (Phase 4 - Transformers) mein — Query, Key, Value matrices ka dot product hota hai. Convolution (Phase 3 - CNN) bhi technically matrix operations hi hain.
+    </div>
+
+    <div class="iq">
+      <span class="q-num">Q</span>
+      <p><strong>Agar matrix A ka shape (3×4) hai aur B ka (4×5) hai, toh A×B ka shape kya hoga aur kyun yeh rule exist karta hai?</strong> Shape hoga (3×5). Inner dimensions match karni chahiye kyunki output ka har element ek dot product hai — row of A aur column of B ka.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════ CALCULUS ═══════════════════════════════════ -->
+<section id="calculus" class="section">
+
+  <div class="card">
+    <div class="card-tag">Calculus & Optimization</div>
+    <h2 class="card-title">AI Kaise Seekhta Hai — Gradient Descent ka Rahasya</h2>
+    <p>Linear algebra ne data represent karna sikhaya. Ab calculus bataata hai — <strong>AI galti se kaise improve karta hai?</strong></p>
+
+    <h3 class="sub">🔹 Derivative — Slope kitna hai?</h3>
+    <p>Derivative batata hai — "agar main yahan se thoda sa aage jaaun, output kitna change hoga?" AI mein yeh batata hai ki koi weight change karne se loss kitna affect hoga.</p>
+    <div class="formula">df/dx = limit(h→0) [f(x+h) - f(x)] / h</div>
+    <div class="analogy"><span>Analogy:</span> Tum ek pahad par khade ho andhera mein. Derivative tumhe batata hai — "is foot ke neeche zameen upar ja rahi hai ya neeche." Tum hamesha neeche wali direction mein kadam rakhte ho — yahi gradient descent hai.</div>
+
+    <h3 class="sub">🔹 Gradient — Multi-dimensional slope</h3>
+    <p>Jab kai variables hoon (jaise crores of weights in a neural network), toh gradient ek vector hota hai — har weight ke respect mein derivative.</p>
+    <div class="formula">∇L = [∂L/∂w₁, ∂L/∂w₂, ..., ∂L/∂wₙ]</div>
+
+    <div class="ai-box">
+      <div class="ai-box-title">🧠 Gradient Descent — AI ka Learning Mechanism</div>
+      <p><strong>Step 1:</strong> Forward pass karo → prediction banao</p>
+      <p><strong>Step 2:</strong> Loss calculate karo (kitna galat tha?)</p>
+      <p><strong>Step 3:</strong> Gradient calculate karo (kaun sa weight kitna responsible?)</p>
+      <p><strong>Step 4:</strong> Weights update karo gradient ke opposite direction mein</p>
+      <div class="formula">w_new = w_old - α × ∂L/∂w
+
+α (alpha) = learning rate = kitne bade step lein</div>
+      <p>Yahi baar baar repeat karte hain — hazaron, laakhon baar. Tabhi model "trained" hota hai.</p>
+    </div>
+
+    <div class="iq">
+      <span class="q-num">Q</span>
+      <p><strong>Learning rate bahut chhota ho toh kya hoga? Bahut bada ho toh?</strong> Chhota: learning bahut slow, time waste. Bada: overshooting — minimum cross karke doosri taraf jump karega, loss diverge kar sakta hai. Ek sahi "Goldilocks" learning rate chahiye.</p>
+    </div>
+
+    <h3 class="sub">🔹 Chain Rule — Backpropagation ka Heart</h3>
+    <p>Neural network mein layers ke through loss "flow" karana hai — lekin seedha nahi ho sakta kyunki bahut saari functions compose ho rahi hain. Chain rule kaam aata hai.</p>
+    <div class="formula">d/dx[f(g(x))] = f'(g(x)) × g'(x)</div>
+    <div class="analogy"><span>Analogy:</span> Ek factory assembly line — agar final product mein defect hai, tum chain rule se pata lagao: "printing ne defect diya? packing ne? ya raw material mein tha?" Har stage ka contribution calculate hota hai.</div>
+
+    <div class="ai-box">
+      <div class="ai-box-title">🧠 Backpropagation — Chain Rule in Action</div>
+      <p>Backprop basically <strong>chain rule ko recursively apply karna</strong> hai — output layer se input layer tak, har weight ke contribution ko measure karte hue.</p>
+      <div class="formula">∂L/∂w₁ = (∂L/∂output) × (∂output/∂hidden) × (∂hidden/∂w₁)</div>
+      <p>Yeh calculation ek hi backward pass mein efficiently hoti hai. Isliye iska naam "backpropagation" hai — error <em>back</em> propagate hota hai.</p>
+    </div>
+
+    <h3 class="sub">🔹 Loss Functions</h3>
+    <div class="grid-2">
+      <div class="mini-card">
+        <h4>MSE (Regression ke liye)</h4>
+        <p>L = (1/n) Σ(y - ŷ)²</p>
+        <p>Jab output continuous number ho — jaise ghar ki price predict karna.</p>
+      </div>
+      <div class="mini-card">
+        <h4>Cross-Entropy (Classification ke liye)</h4>
+        <p>L = -Σ y·log(ŷ)</p>
+        <p>Jab output ek probability distribution ho — cat vs dog classify karna.</p>
+      </div>
+    </div>
+
+    <div class="iq">
+      <span class="q-num">Q</span>
+      <p><strong>Softmax aur Cross-entropy hamesha saath kyun aate hain?</strong> Softmax output ko valid probability distribution banata hai (sum = 1, all positive). Cross-entropy phir un probabilities ka "surprise" measure karta hai. Dono milke ek complete classification head banate hain.</p>
+    </div>
+
+    <div class="connect-box">
+      <span class="label">🔗 Phase 3 & 4 Connection</span>
+      Vanishing/Exploding gradients (Phase 3 Deep Learning problem) — chain rule mein bahut saare chhhote numbers multiply hone se gradient 0 ho jaata hai ya explode karta hai. Adam optimizer (Phase 3) — gradient descent ka smarter version hai. Attention mechanism (Phase 4) bhi softmax use karta hai.
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════ PROBABILITY ═══════════════════════════════════ -->
+<section id="prob" class="section">
+
+  <div class="card">
+    <div class="card-tag">Probability & Statistics</div>
+    <h2 class="card-title">AI Kaisa Decide Karta Hai — Uncertainty ka Science</h2>
+    <p>AI kabhi 100% sure nahi hota. Woh hamesha <strong>probability ke saath sochta hai</strong>. Yeh section batata hai AI ka "confidence system" kaise kaam karta hai.</p>
+
+    <h3 class="sub">🔹 Probability Basics</h3>
+    <p>P(A) = event A ke hone ki likelihood. Range: [0, 1]. P(0) = impossible, P(1) = certain.</p>
+    <div class="analogy"><span>Analogy:</span> Ek doctor kehta hai — "70% chance hai ki yeh infection bacterial hai." Woh 100% sure nahi hai — woh probability se bol raha hai. AI bhi exactly aisa hi karta hai: "Is image mein cat hone ki probability 0.87 hai."</div>
+
+    <h3 class="sub">🔹 Bayes' Theorem — The King of AI Reasoning</h3>
+    <p>Prior knowledge + new evidence = updated belief. Yahi Bayesian reasoning hai. Aur yahi AI ke decision-making ka core idea hai.</p>
+    <div class="formula">P(A|B) = P(B|A) × P(A) / P(B)
+
+P(A|B)  = Posterior  — B dekhne ke baad A ki probability
+P(B|A)  = Likelihood — Agar A true hai toh B observe karne ki prob
+P(A)    = Prior      — A ke baare mein pehle se kya pata tha
+P(B)    = Evidence   — B ke hone ki overall probability</div>
+
+    <div class="ai-box">
+      <div class="ai-box-title">🧠 Bayes AI mein kaise use hota hai</div>
+      <p><strong>Spam filter example:</strong> "Free money" word dekha → update karo: yeh email spam hone ki probability badh gayi. Nayi evidence (word) prior belief (base spam rate) ke saath combine hoti hai posterior (final decision) banane ke liye.</p>
+      <p>Modern deep learning mein Bayes explicit nahi hota — lekin <strong>spirit wahi hai:</strong> har training step mein model apni "beliefs" (weights) update karta hai naye data ke basis pe.</p>
+    </div>
+
+    <div class="iq">
+      <span class="q-num">Q</span>
+      <p><strong>Prior aur Posterior mein kya difference hai? Ek real example do.</strong> Prior = pehle se kya jaante the (e.g., 1% emails spam hote hain). Posterior = evidence dekhne ke baad updated belief (e.g., "FREE MONEY" word dekhne ke baad 90% probability spam).</p>
+    </div>
+
+    <h3 class="sub">🔹 Distributions — Data ki Shape</h3>
+    <div class="grid-2">
+      <div class="mini-card">
+        <h4>Normal (Gaussian)</h4>
+        <p>Bell curve. Heights, weights, scores — bahut saari real-world cheezein normal distribute hoti hain. Mean + std deviation se define hoti hai.</p>
+      </div>
+      <div class="mini-card">
+        <h4>Bernoulli / Binomial</h4>
+        <p>Binary outcomes — yes/no, 0/1. Classification problems mein output probability yahi hoti hai.</p>
+      </div>
+    </div>
+
+    <h3 class="sub">🔹 Expected Value & Variance</h3>
+    <div class="formula">E[X] = Σ x × P(x)   ← average outcome
+Var(X) = E[(X - μ)²] ← spread/uncertainty</div>
+
+    <div class="ai-box">
+      <div class="ai-box-title">🧠 Softmax — Probability Distribution banana</div>
+      <p>AI ka output layer raw numbers (logits) deta hai — jaise [2.1, 0.8, -0.5]. Softmax inhe valid probability distribution mein convert karta hai:</p>
+      <div class="formula">P(class_i) = e^(zᵢ) / Σ e^(zⱼ)
+
+Result: [0.72, 0.23, 0.05]  ← sab positive, sum = 1.0</div>
+      <p>Ab yeh probabilities readable hain: "72% chance class 1 hai."</p>
+    </div>
+
+    <h3 class="sub">🔹 Overfitting aur Underfitting — Statistical View</h3>
+    <div class="analogy"><span>Analogy — Overfitting:</span> Tumne ek exam ke liye sirf previous year ke exact questions ratte maar liye. Naye questions pe fail ho gaye. Model ne training data ke <em>noise</em> ko bhi "memorize" kar liya, generalizable patterns nahi seekhe.</div>
+    <div class="analogy"><span>Analogy — Underfitting:</span> Tumne kuch padha hi nahi. Model itna simple hai ki training data mein bhi patterns capture nahi kar paaya.</div>
+
+    <div class="connect-box">
+      <span class="label">🔗 Phase 2 & 3 Connection</span>
+      Bias-variance tradeoff (Phase 2 Classical ML) — directly yahan se aata hai. Regularization (L1, L2) — overfitting rokne ka technique. Dropout (Phase 3 Deep Learning) — neural network ka overfitting solution. Bayesian Neural Networks (Advanced Phase 4) — explicit probability distributions over weights.
+    </div>
+
+    <div class="iq">
+      <span class="q-num">Q</span>
+      <p><strong>Cross-entropy loss "surprise" kyun measure karta hai?</strong> -log(p) high hota hai jab p low ho (model galat tha, bahut surprised). Low hota hai jab p high ho (model confident aur correct). Isse model ko "be confident and correct" ki taraf push milti hai.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════ CONNECTIONS ═══════════════════════════════════ -->
+<section id="connections" class="section">
+
+  <div class="card">
+    <div class="card-tag">The Big Map</div>
+    <h2 class="card-title">Yeh Teeno Kaise Connect Hote Hain — Ek Training Step Mein</h2>
+    <p>Phase 1 ke teen pillars alag nahi hain — ek training step mein <strong>teeno simultaneously use hote hain</strong>. Dekhte hain:</p>
+    <ul class="steps">
+      <li>
+        <span class="step-num">1</span>
+        <div class="step-content">
+          <h4>[Linear Algebra] Data ko vector banao</h4>
+          <p>Image pixels → 784-dim vector. Sentence → embedding matrix. Input ready hai matrix multiplication ke liye.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-num">2</span>
+        <div class="step-content">
+          <h4>[Linear Algebra] Forward pass — matrix multiplications</h4>
+          <p>W₁×x + b₁ → ReLU → W₂×h + b₂ → ... → logits. Yeh sirf numbers ka transformation hai through weight matrices.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-num">3</span>
+        <div class="step-content">
+          <h4>[Probability] Softmax → Loss</h4>
+          <p>Logits ko softmax se probability distribution banao. Cross-entropy loss calculate karo — kitna "surprised" tha model correct answer se?</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-num">4</span>
+        <div class="step-content">
+          <h4>[Calculus] Backprop — Chain rule se gradients</h4>
+          <p>Loss se backwards — har weight ka contribution calculate karo. ∂L/∂wᵢ har weight ke liye.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-num green">5</span>
+        <div class="step-content">
+          <h4>[Calculus] Gradient Descent — Weights update karo</h4>
+          <p>w = w - α×∇L. Ek step neeche. Phir step 1 repeat. Thousands of times.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card green">
+    <div class="card-tag">Phase Connections</div>
+    <h2 class="card-title">Yeh Phase 2-5 mein kaise kaam aayega</h2>
+    <div class="connect-box">
+      <span class="label">→ Phase 2: Classical ML</span>
+      Linear Regression uses least squares (calculus). Decision Trees use entropy (probability). SVM uses dot products (linear algebra). PCA uses eigenvectors (advanced linear algebra).
+    </div>
+    <div class="connect-box">
+      <span class="label">→ Phase 3: Deep Learning</span>
+      Backprop = chain rule at scale. Vanishing gradients = calculus problem. Batch norm = statistics. Weight initialization = probability distributions matter.
+    </div>
+    <div class="connect-box">
+      <span class="label">→ Phase 4: Modern AI</span>
+      Attention = dot product + softmax. Positional encoding = trigonometric functions (calculus). KL divergence in VAEs = probability theory. Embeddings = high-dimensional linear algebra.
+    </div>
+    <div class="connect-box">
+      <span class="label">→ Phase 5: Production</span>
+      Model uncertainty quantification = probability. A/B testing = statistics (hypothesis testing). Feature scaling = statistics. Calibration = probability alignment.
+    </div>
+  </div>
+
+  <div class="card yellow">
+    <div class="card-tag">Training vs Inference</div>
+    <h2 class="card-title">Training aur Inference — Kya Fark Hai?</h2>
+    <div class="grid-2">
+      <div class="mini-card">
+        <h4>🏋️ Training</h4>
+        <p>Forward pass + Loss + Backward pass + Weight update. Weights change hote hain. Slow, memory intensive. Gradients store karne padte hain.</p>
+      </div>
+      <div class="mini-card">
+        <h4>⚡ Inference</h4>
+        <p>Sirf Forward pass. Weights frozen hain — sirf read hote hain. Fast, efficient. Gradients store nahi karte (no_grad mode).</p>
+      </div>
+    </div>
+    <div class="iq" style="margin-top:16px">
+      <span class="q-num">Q</span>
+      <p><strong>Tumne independently deduce kiya tha — inference mein backward pass kyun nahi hota?</strong> Kyunki weights pehle se trained hain. Unhe change karne ki zaroorat nahi. Backward pass sirf weights update karne ke liye kiya jaata hai — agar update nahi karna toh backward pass ka koi kaam nahi.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════ EXAM ═══════════════════════════════════ -->
+<section id="exam" class="section">
+
+  <h2 style="font-size:24px;margin-bottom:8px;">Test & Exam Questions</h2>
+  <p style="color:var(--text2);margin-bottom:32px;">Phase 1 ke questions — IIT/Oxford/Cambridge standard. Pehle khud sochna, phir answer reveal karna.</p>
+
+  <!-- EASY -->
+  <div class="exam-card">
+    <span class="difficulty-badge easy">Easy</span>
+    <p class="exam-q">1. Ek neural network ke ek neuron mein kya hota hai — mathematically? Dot product, matrix multiply, ya kuch aur? Aur phir kya hota hai us result ke saath?</p>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+    <div class="answer">Neuron compute karta hai: output = activation(W·x + b). W·x ek dot product hai (weight vector aur input vector ka). Phir bias b add hota hai. Phir activation function apply hoti hai (jaise ReLU ya Sigmoid) jo non-linearity deti hai. Bina activation ke network sirf ek bada linear transformation hoga — layers ka koi faida nahi.</div>
+  </div>
+
+  <div class="exam-card">
+    <span class="difficulty-badge easy">Easy</span>
+    <p class="exam-q">2. Gradient descent mein hum gradient ke "opposite" direction mein kyun jaate hain? Gradient ke same direction mein kyun nahi?</p>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+    <div class="answer">Gradient woh direction hai jismein function sabse tezi se increase karta hai. Hum loss minimize karna chahte hain — toh hum opposite direction mein jaate hain (steepest descent). Gradient ke same direction mein jaana matlab loss increase karna — woh bilkul opposite of learning hai.</div>
+  </div>
+
+  <div class="exam-card">
+    <span class="difficulty-badge easy">Easy</span>
+    <p class="exam-q">3. Softmax function ka output kya guarantee karta hai? Sirf yeh bhi batao — kyun exponent (e^x) use karte hain instead of just dividing by sum?</p>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+    <div class="answer">Softmax guarantee karta hai ki sab outputs positive hain aur unka sum 1 hoga — valid probability distribution. e^x use karne ke do reasons: (1) yeh negative logits ko positive banata hai, (2) exponential differences ko amplify karta hai — highest logit bahut dominantly highest probability ban jaata hai (makes confident predictions sharper). Simple division negative values aur invalid probabilities de sakti thi.</div>
+  </div>
+
+  <!-- MEDIUM -->
+  <div class="exam-card">
+    <span class="difficulty-badge medium">Medium</span>
+    <p class="exam-q">4. Cross-entropy loss formula hai: L = -Σ y·log(ŷ). Samjhao ki yeh formula mathematically "surprise" ya "incorrectness" ko kyun capture karta hai. Ek example ke saath.</p>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+    <div class="answer">-log(p) ki property: jab p=1 (certain), log(1)=0, so loss=0. Jab p→0 (very wrong), -log(p)→∞, so loss huge. 
+
+Example: Correct class ke liye y=1. Agar model ŷ=0.9 predict kare: L=-log(0.9)=0.105 (low loss, good!). Agar model ŷ=0.01 predict kare: L=-log(0.01)=4.6 (huge loss, very wrong!). 
+
+Information theory se: -log(p) bits of "surprise" hai. Agar model confident tha aur sahi tha — koi surprise nahi. Agar confident tha lekin galat — bahut surprise. Yahi "learning signal" hai.</div>
+  </div>
+
+  <div class="exam-card">
+    <span class="difficulty-badge medium">Medium</span>
+    <p class="exam-q">5. Chain rule 2-layer network mein: L → a₂ → z₂ → W₂ → a₁ → z₁ → W₁. W₁ (first layer weight) ke respect mein ∂L/∂W₁ likhne ki steps kya hongi? Computation graph samjhao.</p>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+    <div class="answer">∂L/∂W₁ = (∂L/∂a₂) × (∂a₂/∂z₂) × (∂z₂/∂a₁) × (∂a₁/∂z₁) × (∂z₁/∂W₁)
+
+Step by step:
+• ∂L/∂a₂ = loss ka output ke respect mein derivative (cross-entropy grad)
+• ∂a₂/∂z₂ = activation function grad (e.g., sigmoid's σ(1-σ))  
+• ∂z₂/∂a₁ = W₂ (because z₂ = W₂·a₁ + b₂, derivative w.r.t. a₁ is W₂)
+• ∂a₁/∂z₁ = first layer activation grad
+• ∂z₁/∂W₁ = a₀ = x (input, because z₁ = W₁·x + b₁)
+
+Yahi backprop hai — output se input ki taraf multiply karte jaao.</div>
+  </div>
+
+  <!-- HARD -->
+  <div class="exam-card">
+    <span class="difficulty-badge hard">Hard</span>
+    <p class="exam-q">6. Bayes' theorem use karke explain karo: Ek disease test 99% accurate hai. Disease prevalence 0.1% hai. Agar test positive aaye toh actually disease hone ki probability kya hai? Answer surprising kyun lagta hai? AI mein yeh "base rate fallacy" kahan important hai?</p>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+    <div class="answer">P(Disease|Positive) = P(Positive|Disease) × P(Disease) / P(Positive)
+
+P(Positive|Disease) = 0.99 (test accuracy)
+P(Disease) = 0.001 (0.1% prevalence = prior)
+P(Positive) = P(Pos|Dis)×P(Dis) + P(Pos|NoDis)×P(NoDis)
+            = 0.99×0.001 + 0.01×0.999 = 0.00099 + 0.00999 = 0.01098
+
+P(Disease|Positive) = (0.99 × 0.001) / 0.01098 ≈ 0.083 = ~8.3%!
+
+Surprising kyun: Test 99% accurate hai lekin positive result ka sirf 8.3% chance actual disease! Because prior (0.1%) bahut low tha — zyaadatar positives false positives hain.
+
+AI mein relevance: Class imbalance problem. Agar 99% images cats hain aur 1% dogs, toh model "always predict cat" se bhi 99% accurate lagega — lekin useless. Precision/Recall metrics isi liye hain. Prior ko always consider karo.</div>
+  </div>
+
+  <div class="exam-card">
+    <span class="difficulty-badge hard">Hard</span>
+    <p class="exam-q">7. Agar gradient descent mein ek weight ka gradient consistently 0 aata rahe, toh woh weight kabhi update nahi hoga. Kab aur kyun aisa ho sakta hai? Yeh ReLU se kaise related hai? Aur isse solve kaise karte hain?</p>
+    <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+    <div class="answer">Yeh "Dead Neuron" ya "Dying ReLU" problem hai.
+
+Kyun: ReLU(x) = max(0, x). Jab x ≤ 0 ho toh output = 0, aur gradient = 0 (flat region). Agar neuron ka input consistently negative ho, toh uska output hamesha 0 hoga, gradient 0 hoga, aur backprop se koi signal us neuron tak nahi pahunchega. Effectively woh neuron "dead" ho jaata hai — kabhi activate nahi hoga.
+
+Yeh kab hota hai: Bahut bada learning rate se weights bahut negative ho jayein. Agar sabse initial weights gadbad se initialize hon.
+
+Solutions:
+• Leaky ReLU: f(x) = x if x>0 else 0.01x — negative region mein bhi thoda gradient
+• ELU (Exponential Linear Unit)
+• Weight initialization strategies (He initialization for ReLU)
+• Lower learning rate
+• Batch Normalization — inputs normalize karna taaki neurons dead zone mein na jayein</div>
+  </div>
+
+</section>
+
+<footer>
+  Hemant's AI Learning Brain · Phase 1 Complete ✓ · Phase 2 Next: Classical ML 🚀
+</footer>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function toggleAnswer(btn) {
+  const ans = btn.nextElementSibling;
+  ans.classList.toggle('visible');
+  btn.textContent = ans.classList.contains('visible') ? 'Hide Answer' : 'Reveal Answer';
+}
+</script>
+</body>
+</html>
