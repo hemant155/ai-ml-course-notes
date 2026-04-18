@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dot Product — All Solutions Explained</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Literata:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0f14;
+    --surface: #13171f;
+    --surface2: #1a1f29;
+    --border: #252b38;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --accent: #f0a500;
+    --accent2: #e05a2b;
+    --green: #22c55e;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Literata', Georgia, serif;
+    font-weight: 300;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0c0f14 0%, #131a26 50%, #0f1218 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3.5rem 3rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(240,165,0,0.06) 0%, transparent 70%);
+    top: -150px; right: -100px;
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(240,165,0,0.1);
+    border: 1px solid rgba(240,165,0,0.25);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.9rem;
+    margin-bottom: 1.2rem;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    color: #fff;
+    max-width: 700px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    margin-top: 1rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+    max-width: 520px;
+    font-style: italic;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 2.5rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* NAV */
+  .nav-strip {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.9rem 1.2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { color: var(--accent); }
+  .nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* MAIN */
+  main { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem 6rem; }
+
+  /* LEVEL HEADER */
+  .level-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 3rem 0 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .level-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid;
+  }
+  .badge-l1 { border-color: var(--green); color: var(--green); }
+  .badge-l2 { border-color: var(--accent); color: var(--accent); }
+  .badge-l3 { border-color: var(--accent2); color: var(--accent2); }
+  .level-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .level-marks {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+
+  /* QUESTION CARD */
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin-bottom: 1.8rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .q-card:hover { border-color: rgba(240,165,0,0.3); }
+
+  .q-top {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: start;
+    gap: 1rem;
+    padding: 1.2rem 1.5rem;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .q-number {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--border);
+    line-height: 1;
+    min-width: 2.5rem;
+  }
+  .q-card:hover .q-number { color: var(--accent); transition: color 0.2s; }
+  .q-question {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: #ccc;
+    font-family: 'Literata', serif;
+  }
+  .q-question strong { color: var(--text); font-weight: 500; }
+  .q-question code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8em;
+    background: var(--bg);
+    padding: 0.1em 0.4em;
+    color: var(--blue);
+  }
+  .marks-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: var(--accent2);
+    white-space: nowrap;
+    background: rgba(224,90,43,0.1);
+    padding: 0.2rem 0.6rem;
+    border: 1px solid rgba(224,90,43,0.2);
+  }
+
+  /* ANSWER SECTION */
+  .answer-wrap { padding: 1.5rem; }
+
+  /* ANSWER LABEL */
+  .ans-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+  .ans-dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .ans-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green);
+  }
+
+  /* CORRECT ANSWER BOX */
+  .correct-box {
+    background: rgba(34,197,94,0.07);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-left: 3px solid var(--green);
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.88rem;
+  }
+  .correct-box .opt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--green);
+    margin-bottom: 0.3rem;
+    display: block;
+  }
+
+  /* EXPLANATION BLOCK */
+  .explain {
+    font-size: 0.88rem;
+    line-height: 1.8;
+    color: #c8cdd8;
+  }
+  .explain p { margin-bottom: 0.9rem; }
+  .explain p:last-child { margin-bottom: 0; }
+  .explain strong { color: var(--text); font-weight: 500; }
+  .explain em { color: var(--accent); font-style: italic; }
+  .explain code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    background: var(--bg);
+    padding: 0.1em 0.4em;
+    color: var(--blue);
+  }
+
+  /* FORMULA BLOCK */
+  .formula-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 1rem 1.4rem;
+    margin: 1rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--accent);
+    line-height: 1.9;
+    overflow-x: auto;
+  }
+
+  /* STEP BLOCK */
+  .steps { margin: 1rem 0; counter-reset: step; }
+  .step {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+    align-items: flex-start;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+  .step-text { font-size: 0.87rem; line-height: 1.7; color: #c8cdd8; }
+  .step-text strong { color: var(--text); }
+
+  /* ANALOGY CALLOUT */
+  .analogy-box {
+    background: rgba(167,139,250,0.07);
+    border: 1px solid rgba(167,139,250,0.2);
+    border-left: 3px solid var(--purple);
+    padding: 0.9rem 1.2rem;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+    font-style: italic;
+    color: #c4b8f0;
+  }
+  .analogy-box::before {
+    content: '💡 Analogy: ';
+    font-style: normal;
+    font-weight: 500;
+    color: var(--purple);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* HINGLISH BOX */
+  .hinglish {
+    background: rgba(96,165,250,0.06);
+    border: 1px solid rgba(96,165,250,0.15);
+    border-left: 3px solid var(--blue);
+    padding: 0.9rem 1.2rem;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+    color: #b8d4f8;
+  }
+  .hinglish::before {
+    content: '🇮🇳 Simple mein: ';
+    font-weight: 500;
+    color: var(--blue);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 0.4rem;
+    font-style: normal;
+  }
+
+  /* WRONG OPTIONS */
+  .wrong-opts {
+    margin-top: 0.8rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .wrong-opts strong { color: var(--accent2); font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; display: block; margin-bottom: 0.4rem; letter-spacing: 0.08em; }
+  .wrong-item {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+    align-items: flex-start;
+  }
+  .wrong-x { color: var(--accent2); font-weight: 600; flex-shrink: 0; font-size: 0.8rem; }
+
+  /* TABLE */
+  .calc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.83rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .calc-table th {
+    background: var(--bg);
+    color: var(--accent);
+    padding: 0.5rem 0.8rem;
+    text-align: left;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    border: 1px solid var(--border);
+  }
+  .calc-table td {
+    padding: 0.5rem 0.8rem;
+    border: 1px solid var(--border);
+    color: #ccc;
+  }
+  .calc-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .calc-table .highlight td { color: var(--green); }
+
+  /* KEY INSIGHT */
+  .insight {
+    background: rgba(240,165,0,0.06);
+    border: 1px solid rgba(240,165,0,0.2);
+    padding: 0.9rem 1.2rem;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+    color: #f0d090;
+  }
+  .insight::before {
+    content: '⭐ Key Insight: ';
+    font-weight: 600;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  /* DIVIDER */
+  .section-div {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0.5rem 0 2rem;
+  }
+
+  /* SCROLL TO TOP */
+  .back-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    width: 40px; height: 40px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .back-top.visible { opacity: 1; }
+
+  /* ANIMATIONS */
+  .q-card { animation: fadeUp 0.4s ease both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .q-card:nth-child(1) { animation-delay: 0.05s; }
+  .q-card:nth-child(2) { animation-delay: 0.1s; }
+  .q-card:nth-child(3) { animation-delay: 0.15s; }
+  .q-card:nth-child(4) { animation-delay: 0.2s; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">✦ Complete Solutions · Hinglish Explanations</div>
+  <h1>Dot Product Exam<br><span>— Solved & Explained</span></h1>
+  <p>Har question ka answer + easy Hinglish mein samajh. Step by step, no confusion.</p>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-val">10</div><div class="stat-label">Questions</div></div>
+    <div class="stat"><div class="stat-val">60</div><div class="stat-label">Total Marks</div></div>
+    <div class="stat"><div class="stat-val">3</div><div class="stat-label">Difficulty Levels</div></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav-strip">
+  <button class="nav-btn active" onclick="scrollTo('l1')">Level I · Conceptual</button>
+  <button class="nav-btn" onclick="scrollTo('l2')">Level II · Tricky</button>
+  <button class="nav-btn" onclick="scrollTo('l3')">Level III · Expert</button>
+</div>
+
+<main>
+
+<!-- ═══════════ LEVEL I ═══════════ -->
+<div id="l1" class="level-head">
+  <span class="level-badge badge-l1">Level I</span>
+  <span class="level-title">Conceptual Questions — MCQ</span>
+  <span class="level-marks">4 Questions · 20 Marks</span>
+</div>
+
+<!-- Q1 -->
+<div class="q-card">
+  <div class="q-top">
+    <div class="q-number">01</div>
+    <div class="q-question">
+      If <strong>a · b = 0</strong>, what does this tell you geometrically? And name ONE place in AI where this property is deliberately used.
+    </div>
+    <div class="marks-pill">5 marks</div>
+  </div>
+  <div class="answer-wrap">
+    <div class="ans-label"><div class="ans-dot"></div><div class="ans-title">Correct Answer — Option C</div></div>
+    <div class="correct-box">
+      <span class="opt">✓ (C) Correct</span>
+      The vectors are perpendicular (orthogonal) — they share zero "common direction." Used in orthogonal weight initialization to prevent neurons from learning identical features.
+    </div>
+
+    <div class="explain">
+      <p><strong>Pehle geometry samjho:</strong> Dot product = |a| × |b| × cos(θ). Agar dot product = 0 hai, toh ya toh koi vector zero hai, ya cos(θ) = 0 hai. cos(θ) = 0 tabhi hota hai jab θ = 90°. Matlab — dono vectors ek doosre se <em>perfectly perpendicular</em> hain.</p>
+
+      <div class="analogy-box">East aur North dono directions. Agar tum East ja rahe ho, toh North direction tumhe bilkul help nahi karta — na help, na hurt. Zero overlap. Yahi orthogonality hai.</div>
+
+      <p><strong>AI mein use:</strong> Jab neural network train hota hai, uske neurons mein weight vectors hote hain. Agar sab neurons same direction mein start karein, toh woh sab same cheez seekhenge — waste! Orthogonal initialization mein hum starting weights aise set karte hain ki sab neurons ki weight vectors ek doosre se 90° par hain — toh sab alag features seekhte hain from the start.</p>
+
+      <div class="hinglish">Socho ek class mein 10 students hain. Teacher ne bola — sabko alag topic padhna hai. Orthogonal init matlab teacher ne ensure kiya ki koi bhi do students same topic nahi padh rahe. Maximum diversity from day one!</div>
+    </div>
+
+    <div class="wrong-opts">
+      <strong>❌ Wrong Options — Why They're Wrong</strong>
+      <div class="wrong-item"><span class="wrong-x">✗ A:</span><span>Same magnitude ka dot product se koi lena dena nahi — magnitude alag calculation hai (|a| = √(a₁²+a₂²+...))</span></div>
+      <div class="wrong-item"><span class="wrong-x">✗ B:</span><span>Zero vector wala case special edge case hai — perpendicular vectors ka zero vector hona zaroori nahi</span></div>
+      <div class="wrong-item"><span class="wrong-x">✗ D:</span><span>Sum zero hona alag concept hai. a + b = 0 means opposite vectors. a·b = 0 means perpendicular — very different!</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Q2 -->
+<div class="q-card">
+  <div class="q-top">
+    <div class="q-number">02</div>
+    <div class="q-question">
+      A neural network neuron receives input vector <code>x = [2, 3]</code> and has weight vector <code>w = [0.5, −1]</code>. What does a <strong>negative</strong> dot product output signify about this neuron's "opinion" of the input?
+    </div>
+    <div class="marks-pill">5 marks</div>
+  </div>
+  <div class="answer-wrap">
+    <div class="ans-label"><div class="ans-dot"></div><div class="ans-title">Correct Answer — Option B</div></div>
+    <div class="correct-box">
+      <span class="opt">✓ (B) Correct</span>
+      The input pattern is misaligned with the neuron's learned feature — the neuron is "voting against" this input activating it.
+    </div>
+
+    <div class="explain">
+      <p><strong>Pehle calculation karo:</strong></p>
+      <div class="formula-block">w · x = (0.5)(2) + (−1)(3)
+     = 1 + (−3)
+     = −2   ← Negative!</div>
+
+      <p><strong>Matlab kya hai?</strong> Dot product = |w| × |x| × cos(θ). Negative dot product matlab cos(θ) &lt; 0, matlab θ &gt; 90°. Dono vectors opposite side mein hain — misaligned.</p>
+
+      <div class="analogy-box">Socho neuron ek judge hai jiska job hai "cat" detect karna. Input image mein "dog" diya gaya. Judge ne dekha aur bola — "Nahi, yeh mera expertise nahi. Main is input ke against vote karta hoon." Negative dot product = neuron ka "no vote."</div>
+
+      <p><strong>ReLU ke baad kya hoga?</strong> Most neurons use ReLU activation: max(0, value). Toh −2 → 0. Neuron fire nahi karega is input ke liye. Effectively yeh neuron "sleeps" for this input.</p>
+
+      <div class="hinglish">Weight vector = neuron ne jo seekha hai (uska "ideal input"). Input vector = jo tumne diya. Negative dot product matlab — "Yaar, tum woh nahi ho jisko main dhundh raha tha." ReLU kaata hai — output zero ho jaata hai.</div>
+    </div>
+
+    <div class="wrong-opts">
+      <strong>❌ Wrong Options — Why They're Wrong</strong>
+      <div class="wrong-item"><span class="wrong-x">✗ A:</span><span>Negative output sirf misalignment dikhata hai — weights corrupt nahi hue. Training mein weights ko negative values aana normal hai.</span></div>
+      <div class="wrong-item"><span class="wrong-x">✗ C:</span><span>Always zero nahi — depends on activation function. Sigmoid(-2) still gives 0.12, not 0.</span></div>
+      <div class="wrong-item"><span class="wrong-x">✗ D:</span><span>Input vector flip karna nonsensical hai — hum input ko modify nahi karte, sirf output interpret karte hain.</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Q3 -->
+<div class="q-card">
+  <div class="q-top">
+    <div class="q-number">03</div>
+    <div class="q-question">
+      Why does cosine similarity use <strong>normalized</strong> dot product instead of raw dot product for comparing word embeddings in NLP?
+    </div>
+    <div class="marks-pill">5 marks</div>
+  </div>
+  <div class="answer-wrap">
+    <div class="ans-label"><div class="ans-dot"></div><div class="ans-title">Correct Answer — Option C</div></div>
+    <div class="correct-box">
+      <span class="opt">✓ (C) Correct</span>
+      Raw dot product is affected by vector magnitude — "king" would appear more similar to "the" (high frequency word, large magnitude) than to "queen." Normalization isolates pure directional similarity.
+    </div>
+
+    <div class="explain">
+      <p><strong>Problem ko samjho:</strong> Word embedding mein har word ek vector hai. Training ke dauraan, common words (like "the", "is", "a") bahut zyada baar appear hote hain — unke vectors large magnitude le lete hain.</p>
+
+      <div class="formula-block">Raw dot product:   a · b = |a| × |b| × cos(θ)
+                                 ↑         ↑         ↑
+                            magnitude  magnitude   direction</div>
+
+      <p>Agar "the" ka |vector| = 100 aur "queen" ka |vector| = 5 hai, toh "king" ka "the" ke saath raw dot product bohot bada ho sakta hai even if their directions (meanings) are unrelated!</p>
+
+      <div class="formula-block">Cosine similarity:  cos(θ) = (a · b) / (|a| × |b|)
+
+Normalization removes magnitude completely.
+Result is ONLY about direction = ONLY about meaning.</div>
+
+      <div class="analogy-box">Socho do log judge kar rahe hain — ek rich hai (loud voice), ek poor hai (soft voice). Agar tum sirf loudness suno, rich person ki opinion dominate karegi even if poor person is more correct. Cosine similarity = sirf content suno, volume ignore karo.</div>
+
+      <div class="hinglish">"The" word bahut common hai — uska vector "bada" ho jaata hai training mein. Raw dot product mein "the" sabse similar lag sakta hai sab cheez se. Cosine normalization bolti hai — "Vector kitna bada hai mujhe nahi pata, sirf direction batao." Aur direction = meaning!</div>
+
+      <div class="insight">This is WHY "king − man + woman ≈ queen" works in Word2Vec. It's all done with normalized vectors. Magnitude remove karo, pure meaning bachta hai.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Q4 -->
+<div class="q-card">
+  <div class="q-top">
+    <div class="q-number">04</div>
+    <div class="q-question">
+      In the Transformer attention formula <code>softmax(QKᵀ/√d)</code>, why is the dot product <strong>divided by √d</strong>?
+    </div>
+    <div class="marks-pill">5 marks</div>
+  </div>
+  <div class="answer-wrap">
+    <div class="ans-label"><div class="ans-dot"></div><div class="ans-title">Correct Answer — Option C</div></div>
+    <div class="correct-box">
+      <span class="opt">✓ (C) Correct</span>
+      For large d, dot products grow large in magnitude, pushing softmax into near-zero gradient regions (saturation). Dividing by √d keeps variance ~1, preserving healthy gradients during training.
+    </div>
+
+    <div class="explain">
+      <p><strong>Step 1 — Variance kya hoti hai dot product mein?</strong></p>
+      <p>Agar Q aur K ke components random hain with mean=0, variance=1, aur d dimensions hain, toh:</p>
+      <div class="formula-block">Var(Q · K) = d × Var(q₁k₁) = d × 1 = d
+
+So: Standard deviation = √d
+As d grows, dot products get LARGER on average.</div>
+
+      <p><strong>Step 2 — Softmax problem:</strong></p>
+      <div class="formula-block">softmax(x)ᵢ = eˣⁱ / Σeˣʲ
+
+Agar x values bahut LARGE hain (e.g., 50, 48, 2):
+→ e⁵⁰ ≈ 5×10²¹  (astronomically huge)
+→ One value dominates COMPLETELY
+→ All other attention weights ≈ 0
+→ Gradient through softmax ≈ 0  ← VANISHING GRADIENT!</div>
+
+      <p><strong>Step 3 — √d fix:</strong></p>
+      <div class="formula-block">Divide by √d  →  Variance becomes: d / (√d)² = d/d = 1
+Now dot products stay in reasonable range
+Softmax stays "spread out" 
+Gradients stay healthy ✓</div>
+
+      <div class="analogy-box">Socho 512 log ek exam de rahe hain (d=512 dimensions). Ek student ka score 50,000 ho jaata hai (kyunki dimension bahut large hai). Teacher ne bola — "Sab scores ko √512 ≈ 22 se divide karo." Ab sab scores normal range mein aa jaate hain aur comparison meaningful hota hai.</div>
+
+      <div class="hinglish">Bina scaling ke, ek word ki attention value itni badi ho jaati hai ki woh akela sab attention le leta hai. Baki sab words ko zero attention milti hai. Model ek hi word pe "stuck" ho jaata hai. √d scaling ensures sab words ko fair chance milta hai — especially during training jab gradients flow karne chahiye.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ LEVEL II ═══════════ -->
+<div id="l2" class="level-head" style="margin-top:1rem">
+  <span class="level-badge badge-l2">Level II</span>
+  <span class="level-title">Tricky Questions — Subjective</span>
+  <span class="level-marks">3 Questions · 20 Marks</span>
+</div>
+
+<!-- Q5 -->
+<div class="q-card">
+  <div class="q-top">
+    <div class="q-number">05</div>
+    <div class="q-question">
+      Vector <code>a = [3, 4]</code> and vector <code>b = [−4, 3]</code>. Without calculating, can you determine the dot product and the angle between them? Then explain what this means for a neural network.
+    </div>
+    <div class="marks-pill">7 marks</div>
+  </div>
+  <div class="answer-wrap">
+    <div class="ans-label"><div class="ans-dot"></div><div class="ans-title">Full Solution</div></div>
+
+    <div class="explain">
+      <p><strong>Step 1 — Dot product calculate karo:</strong></p>
+      <div class="formula-block">a · b = (3)(−4) + (4)(3)
+     = −12 + 12
+     = 0</div>
+
+      <p><strong>Step 2 — Angle find karo:</strong></p>
+      <div class="formula-block">a · b = |a| × |b| × cos(θ)
+  0  = |a| × |b| × cos(θ)
+
+|a| = √(3²+4²) = √(9+16) = √25 = 5
+|b| = √(4²+3²) = √(16+9) = √25 = 5
+
+0 = 5 × 5 × cos(θ)
+0 = 25 × cos(θ)
+cos(θ) = 0
+θ = 90°  ✓</div>
+
+      <p><strong>Without calculating trick (advanced insight):</strong> Notice that b = [−4, 3] is just vector a = [3, 4] <em>rotated by exactly 90°</em>. The rule: if (x, y) rotated 90° counterclockwise = (−y, x). So [3,4] → [−4, 3]. They MUST be perpendicular!</p>
+
+      <div class="analogy-box">Ek clock ke haath socho. Agar minute hand 3 baje ki position par hai [3,4], toh 90° bad minute hand [−4,3] par hoga. Dono haath ek doosre se 90° par hain — orthogonal!</div>
+
+      <p><strong>Neural network meaning:</strong></p>
+      <p>Ye do neurons ke weight vectors hain jo same magnitude (5) rakhte hain but completely different directions. Iska matlab:</p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Zero overlap:</strong> Pehla neuron jo feature detect karta hai, doosra neuron usse bilkul detect nahi karta. Maximum diversity.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Orthogonal init ka ideal:</strong> Yeh exactly woh scenario hai jo Keras ka <code>orthogonal_initializer</code> create karta hai — same magnitude, perpendicular directions.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>No redundancy:</strong> Agar dono neurons similar direction mein hote, training mein dono same cheez seekhte — waste of capacity. 90° separation = maximum information.</div></div>
+      </div>
+
+      <div class="insight">Yeh sirf coincidence nahi hai. Mathematically — n orthogonal vectors ek n-dimensional space mein maximum information pack kar sakte hain without any redundancy. CNN ke early layers mein exactly yahi pattern hota hai — different neurons detect edges in different orientations (0°, 45°, 90°, 135°).</div>
+    </div>
+  </div>
+</div>
+
+<!-- Q6 -->
+<div class="q-card">
+  <div class="q-top">
+    <div class="q-number">06</div>
+    <div class="q-question">
+      A student claims: "If I double all values in vector <strong>a</strong>, the cosine similarity between <strong>a</strong> and <strong>b</strong> will double." True or False? Prove it and relate to word embeddings.
+    </div>
+    <div class="marks-pill">6 marks</div>
+  </div>
+  <div class="answer-wrap">
+    <div class="ans-label"><div class="ans-dot"></div><div class="ans-title">Answer: FALSE — Proof</div></div>
+
+    <div class="explain">
+      <p><strong>Let a' = 2a (doubled vector). Prove cosine similarity stays same:</strong></p>
+      <div class="formula-block">cos(a, b)  = (a · b) / (|a| × |b|)
+
+cos(a', b) = (a' · b) / (|a'| × |b|)
+           = (2a · b) / (|2a| × |b|)
+           = (2 × a·b) / (2|a| × |b|)    ← 2 cancels!
+           = (a · b) / (|a| × |b|)
+           = cos(a, b)  ✓ SAME!</div>
+
+      <p>Doubling vector doubles BOTH numerator (dot product) AND denominator (magnitude). They cancel perfectly. <strong>Cosine similarity is completely scale-invariant.</strong></p>
+
+      <div class="analogy-box">Socho do log same direction mein chal rahe hain. Ek 5 steps leta hai, doosra 10 steps. Lekin dono same direction mein chal rahe hain — unka "angle" (similarity) same hai. Kitne steps liye, woh matter nahi karta direction ke liye.</div>
+
+      <div class="hinglish">Cosine similarity = sirf direction dekho, size mat dekho. 2a aur a same direction mein hain — toh b ke saath unka angle same hai. Double karne se direction nahi badlti, sirf "length" badlti hai. Cosine angle check karta hai, length nahi.</div>
+
+      <p><strong>Word embeddings mein kyun important hai:</strong></p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Frequency bias:</strong> "The" word training data mein crores baar aata hai → uska embedding vector bahut BADA ho jaata hai (large magnitude).</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Raw dot product problem:</strong> "king · the" might be huge just because "the" is big — even though they're semantically unrelated.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Cosine fix:</strong> Scale invariance means frequent words ka size advantage remove ho jaata hai. Sirf direction (meaning) bachti hai.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Result:</strong> "king" aur "queen" high cosine similarity → semantically close. "king" aur "the" low cosine similarity → unrelated. Correct behavior!</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Q7 -->
+<div class="q-card">
+  <div class="q-top">
+    <div class="q-number">07</div>
+    <div class="q-question">
+      Vector dot product is commutative (a·b = b·a) but matrix multiplication is NOT (AB ≠ BA). Explain WHY this asymmetry exists and give an AI context where matrix non-commutativity is critical.
+    </div>
+    <div class="marks-pill">7 marks</div>
+  </div>
+  <div class="answer-wrap">
+    <div class="ans-label"><div class="ans-dot"></div><div class="ans-title">Full Solution</div></div>
+
+    <div class="explain">
+      <p><strong>Part 1 — Why a·b = b·a (Vector commutativity):</strong></p>
+      <div class="formula-block">a · b = a₁b₁ + a₂b₂ + ... + aₙbₙ
+      = b₁a₁ + b₂a₂ + ... + bₙaₙ  ← scalar multiplication commutes!
+      = b · a  ✓</div>
+      <p>Each term is just multiplying two numbers (scalars). 3×5 = 5×3. So the whole sum is same either way.</p>
+
+      <p><strong>Part 2 — Why AB ≠ BA (Matrix non-commutativity):</strong></p>
+      <div class="formula-block">Entry (i,j) of AB = (row i of A) · (column j of B)
+Entry (i,j) of BA = (row i of B) · (column j of A)
+
+These are DIFFERENT vectors being dotted → different results!</div>
+
+      <div class="analogy-box">Subah utha → shirt pehno → jacket pehno. Result: shirt andar, jacket bahar. Ab ulta karo → jacket pehno → shirt pehno. Result: jacket andar, shirt bahar — completely different! Order matters in operations that have structure.</div>
+
+      <div class="hinglish">Sirf numbers ek doosre se multiply karo — order matter nahi (3×5 = 5×3). Lekin matrices mein "rows meeting columns" hota hai — ek specific structure hai. Agar structure change karo (order badlo), different rows different columns se milenge — different answer!</div>
+
+      <p><strong>AI Context — Backpropagation (CRITICAL EXAMPLE):</strong></p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Forward pass:</strong> y = W · x (weight matrix times input)</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Backprop gradient:</strong> ∂L/∂x = Wᵀ · (∂L/∂y) ← TRANSPOSE of W, not W itself</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Why transpose?</strong> Forward: information flows x → y via W. Backward: gradient flows y → x — it must travel the SAME connections but in REVERSE. Wᵀ flips the "direction" of the matrix operation.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text"><strong>If you used W instead of Wᵀ:</strong> Dimensions wouldn't even match in most cases! And even if they did, gradients would be completely wrong — model wouldn't learn anything meaningful.</div></div>
+      </div>
+
+      <div class="formula-block">Forward:   y = W · x       (W is m×n, x is n×1, y is m×1)
+Backward:  ∂L/∂x = Wᵀ · g  (Wᵀ is n×m, g is m×1, result is n×1)
+
+Using W instead: W · g = (m×n) · (m×1) → DIMENSION MISMATCH ERROR!</div>
+
+      <div class="insight">Matrix non-commutativity is not a bug — it's the feature that makes backpropagation work. The transpose "reverses" the linear transformation, allowing gradients to flow backwards through the exact same connections that information flowed forward through. This is mathematically elegant.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ LEVEL III ═══════════ -->
+<div id="l3" class="level-head" style="margin-top:1rem">
+  <span class="level-badge badge-l3">Level III</span>
+  <span class="level-title">Expert Questions — IIT / Oxford</span>
+  <span class="level-marks">3 Questions · 20 Marks</span>
+</div>
+
+<!-- Q8 -->
+<div class="q-card">
+  <div class="q-top">
+    <div class="q-number">08</div>
+    <div class="q-question">
+      Prove the Cauchy-Schwarz Inequality: <code>|a·b| ≤ |a| · |b|</code>. Then explain what the equality condition means for neural network neurons.
+    </div>
+    <div class="marks-pill">7 marks</div>
+  </div>
+  <div class="answer-wrap">
+    <div class="ans-label"><div class="ans-dot"></div><div class="ans-title">Proof + Neural Interpretation</div></div>
+
+    <div class="explain">
+      <p><strong>Proof Strategy: Construct a vector that MUST be ≥ 0, then extract the inequality.</strong></p>
+
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Start with a key insight:</strong> For ANY real number t and ANY vectors a, b — the squared length of (a − tb) is always ≥ 0.</div></div>
+      </div>
+
+      <div class="formula-block">|a − tb|² ≥ 0   for all real t</div>
+
+      <div class="steps">
+        <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Expand the left side:</strong></div></div>
+      </div>
+
+      <div class="formula-block">|a − tb|² = (a − tb) · (a − tb)
+           = a·a − t(a·b) − t(b·a) + t²(b·b)
+           = |a|² − 2t(a·b) + t²|b|²</div>
+
+      <div class="steps">
+        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>This is a quadratic in t:</strong> f(t) = |b|²t² − 2(a·b)t + |a|² ≥ 0 always</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text"><strong>A quadratic f(t) ≥ 0 for all t means:</strong> Its discriminant must be ≤ 0 (it can't have two real roots — otherwise it would dip below zero)</div></step></div>
+      </div>
+
+      <div class="formula-block">Discriminant ≤ 0:
+[−2(a·b)]² − 4(|b|²)(|a|²) ≤ 0
+4(a·b)² ≤ 4|a|²|b|²
+(a·b)² ≤ |a|²|b|²
+|a·b| ≤ |a|·|b|  ✓  PROVED!</div>
+
+      <div class="hinglish">Proof ka magic: Humne ek naya vector banaya (a − tb). Iska squared length hamesha positive ya zero hota hai (kyunki square hamesha ≥ 0). Is ek fact se humne extract kar liya ki dot product kabhi magnitudes ke product se bada nahi ho sakta. Ek simple observation se powerful inequality!</div>
+
+      <p><strong>Equality Condition:</strong></p>
+      <div class="formula-block">Equality holds when discriminant = 0
+→ Quadratic has exactly ONE root
+→ a − tb = 0 for some t
+→ a = tb  (vectors are PARALLEL / collinear)</div>
+
+      <p><strong>Neural Network meaning of equality:</strong></p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Maximum activation:</strong> |w·x| = |w|·|x| only when w is parallel to x — i.e., when input x points in EXACTLY the same direction as weight vector w.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Tuned neuron:</strong> A neuron achieves maximum possible activation for a given input magnitude only when its weights are perfectly aligned with the input. This is a "fully tuned" neuron.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Training converges here:</strong> When a CNN's edge-detector neuron fully converges to detecting 45° edges, its weight vector becomes parallel to the 45° edge pattern — maximum activation, equality achieved.</div></step></div>
+      </div>
+
+      <div class="insight">Cauchy-Schwarz tells us there's a CEILING to how much any neuron can activate for a given input. The ceiling is |w|·|x|. Training is the process of pushing the neuron toward this ceiling for its "target" inputs — making w parallel to x for the patterns it should detect.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Q9 -->
+<div class="q-card">
+  <div class="q-top">
+    <div class="q-number">09</div>
+    <div class="q-question">
+      Recommendation system: User A = <code>[1,0,1,0]</code>, User B = <code>[0,1,0,1]</code>. Items: Action <code>[1,0,1,0]</code>, Rom-com <code>[0,1,0,1]</code>, Thriller <code>[0.5,0.5,0.5,0.5]</code>.<br>
+      (a) Compute all scores. (b) Why does Thriller score equally for both users? (c) Feature or Bug?
+    </div>
+    <div class="marks-pill">7 marks</div>
+  </div>
+  <div class="answer-wrap">
+    <div class="ans-label"><div class="ans-dot"></div><div class="ans-title">Complete Solution — All 3 Parts</div></div>
+
+    <div class="explain">
+      <p><strong>Part (a) — All dot product calculations:</strong></p>
+
+      <table class="calc-table">
+        <tr>
+          <th>User</th>
+          <th>Item</th>
+          <th>Calculation</th>
+          <th>Score</th>
+        </tr>
+        <tr>
+          <td>User A [1,0,1,0]</td>
+          <td>Action [1,0,1,0]</td>
+          <td>(1)(1)+(0)(0)+(1)(1)+(0)(0) = 1+0+1+0</td>
+          <td><strong style="color:var(--green)">2</strong></td>
+        </tr>
+        <tr>
+          <td>User A [1,0,1,0]</td>
+          <td>Rom-com [0,1,0,1]</td>
+          <td>(1)(0)+(0)(1)+(1)(0)+(0)(1) = 0+0+0+0</td>
+          <td><strong style="color:var(--accent2)">0</strong></td>
+        </tr>
+        <tr>
+          <td>User A [1,0,1,0]</td>
+          <td>Thriller [.5,.5,.5,.5]</td>
+          <td>(1)(.5)+(0)(.5)+(1)(.5)+(0)(.5) = .5+0+.5+0</td>
+          <td><strong style="color:var(--accent)">1</strong></td>
+        </tr>
+        <tr>
+          <td>User B [0,1,0,1]</td>
+          <td>Action [1,0,1,0]</td>
+          <td>(0)(1)+(1)(0)+(0)(1)+(1)(0) = 0+0+0+0</td>
+          <td><strong style="color:var(--accent2)">0</strong></td>
+        </tr>
+        <tr>
+          <td>User B [0,1,0,1]</td>
+          <td>Rom-com [0,1,0,1]</td>
+          <td>(0)(0)+(1)(1)+(0)(0)+(1)(1) = 0+1+0+1</td>
+          <td><strong style="color:var(--green)">2</strong></td>
+        </tr>
+        <tr class="highlight">
+          <td>User B [0,1,0,1]</td>
+          <td>Thriller [.5,.5,.5,.5]</td>
+          <td>(0)(.5)+(1)(.5)+(0)(.5)+(1)(.5) = 0+.5+0+.5</td>
+          <td><strong>1</strong></td>
+        </tr>
+      </table>
+
+      <p><strong>Summary: User A — Action(2) &gt; Thriller(1) &gt; Rom-com(0) | User B — Rom-com(2) &gt; Thriller(1) &gt; Action(0)</strong></p>
+
+      <p style="margin-top:1rem"><strong>Part (b) — Why Thriller = 1 for BOTH users?</strong></p>
+
+      <div class="formula-block">Thriller vector = [0.5, 0.5, 0.5, 0.5]
+= 0.5 × [1, 1, 1, 1]  ← it's a scaled "all-genre" vector
+
+User A · Thriller = 0.5 × (User A · [1,1,1,1])
+                  = 0.5 × (1+0+1+0) = 0.5 × 2 = 1
+
+User B · Thriller = 0.5 × (User B · [1,1,1,1])
+                  = 0.5 × (0+1+0+1) = 0.5 × 2 = 1
+
+BOTH users have 2 ones in their vector → same result!</div>
+
+      <div class="hinglish">Thriller vector equal parts mein sab genres ka hai — perfectly neutral. Aur dono users mein exactly 2 genres "on" hain (value = 1). Toh dono ko exactly same score milta hai. Yeh sirf mathematical coincidence nahi — it's because both users have the same "total preference intensity" even though they prefer different things.</div>
+
+      <p style="margin-top:1rem"><strong>Part (c) — Feature or Bug? (Both sides ka argument)</strong></p>
+
+      <div class="steps">
+        <div class="step"><div class="step-num">F</div><div class="step-text"><strong>Feature argument:</strong> A genuinely genre-neutral film SHOULD get moderate scores for everyone. It's not the best fit for either user, but it's not wrong either. Score of 1 (vs 2 for preferred genre) correctly places it as "second choice" — accurate behavior!</div></div>
+        <div class="step"><div class="step-num">B</div><div class="step-text"><strong>Bug argument:</strong> Two completely opposite users (A hates rom-com, B hates action) get identical Thriller recommendations. The system can't distinguish between them for this item — it treats them as identical. That's a failure of personalization.</div></step></div>
+        <div class="step"><div class="step-num">F</div><div class="step-text"><strong>Real-world fix:</strong> Netflix uses 512-dimensional embeddings, not 4-dimensional. More dimensions = more ways to differentiate users → same magnitude issue becomes negligible → better personalization.</div></div>
+      </div>
+
+      <div class="insight">This question reveals the FUNDAMENTAL TENSION in recommendation systems: coverage (recommending to many users) vs personalization (recommending differently to different users). Low-dimensional representations sacrifice personalization. High-dimensional ones improve it — at the cost of computation. This tradeoff is active research in 2024-2025 AI.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Q10 -->
+<div class="q-card">
+  <div class="q-top">
+    <div class="q-number">10</div>
+    <div class="q-question">
+      <em>Oxford Essay:</em> "The dot product is not merely a calculation; it is the fundamental language through which neural networks express agreement and disagreement with the world." Evaluate this claim.
+    </div>
+    <div class="marks-pill">6 marks</div>
+  </div>
+  <div class="answer-wrap">
+    <div class="ans-label"><div class="ans-dot"></div><div class="ans-title">Model Essay Answer</div></div>
+
+    <div class="explain">
+      <p><strong>Thesis: The claim is largely true — with one important nuance.</strong></p>
+
+      <p><strong>1. Geometric Foundation — Why "language" is the right metaphor:</strong></p>
+      <p>Language is a system for expressing relationships. The dot product does exactly this for vectors. Through the geometric form a·b = |a||b|cos(θ), it encodes a complete spectrum of relationships: perfect agreement (θ=0°, dot product maximum), independence (θ=90°, dot product zero), and perfect disagreement (θ=180°, dot product negative). No other single operation in linear algebra captures this full relational spectrum so elegantly.</p>
+
+      <div class="formula-block">Agreement scale:    −|a||b| ≤ a·b ≤ +|a||b|
+                          ↑                        ↑
+                    max disagreement         max agreement</div>
+
+      <p><strong>2. Three AI Mechanisms — The language in action:</strong></p>
+
+      <div class="steps">
+        <div class="step"><div class="step-num">I</div><div class="step-text"><strong>Neuron activation (w·x):</strong> Every neuron asks one question: "Does this input agree with what I've learned?" The dot product gives a scalar answer — how much the current input x aligns with the neuron's learned template w. High positive = strong agreement, neuron fires. Near-zero = no opinion. Negative = disagreement, neuron stays silent (after ReLU).</div></div>
+        <div class="step"><div class="step-num">II</div><div class="step-text"><strong>Transformer attention (Q·Kᵀ):</strong> Each query token asks every key token: "Should I attend to you?" The dot product measures agreement between what a token is "looking for" (Q) and what each token "offers" (K). The entire softmax(QKᵀ/√d) mechanism is a dot-product-based voting system for semantic agreement.</div></div>
+        <div class="step"><div class="step-num">III</div><div class="step-text"><strong>Recommendation (user·item):</strong> The system asks: "Does this item agree with this user's preferences?" A single dot product collapses 512 dimensions of preference and 512 dimensions of item features into one number — the verdict. This IS the recommendation.</div></step></div>
+      </div>
+
+      <p><strong>3. The Algebraic Form — Why it works as language:</strong></p>
+      <p>The algebraic form Σaᵢbᵢ reveals why dot product is so powerful as a "language." Each term aᵢbᵢ is a question: "Do you both have feature i, and to what degree?" The sum aggregates evidence across all dimensions. It's a democratic vote — every dimension contributes, and the final scalar is the consensus. This is exactly how meaning works in language: we aggregate evidence across many features to reach a judgment.</p>
+
+      <div class="analogy-box">A judge evaluating a case doesn't look at one piece of evidence — they aggregate all evidence (each dimension) and arrive at a verdict (the scalar). The dot product is the mathematical judge.</div>
+
+      <p><strong>4. The nuance — Where the metaphor breaks:</strong></p>
+      <p>The claim says "fundamental language" — but dot product alone is not sufficient. Without nonlinearities (ReLU, softmax, sigmoid), a stack of dot products is just one big dot product — the network can only express linear relationships. The "language" becomes expressive only when combined with activation functions that introduce curvature. So more precisely: dot product is the <em>vocabulary</em> of neural networks; activation functions are the <em>grammar</em> that makes complex expression possible.</p>
+
+      <div class="insight">FINAL VERDICT: The claim is philosophically correct. Dot product is the universal similarity query of AI — the one operation that appears in neurons, attention, recommendations, and gradient flow. It is not merely computational machinery; it is the mathematical encoding of "how much do these two things agree?" — which is, fundamentally, what intelligence does when it perceives the world.</div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  window.addEventListener('scroll', () => {
+    document.getElementById('backTop').classList.toggle('visible', window.scrollY > 400);
+  });
+
+  function scrollTo(id) {
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+
+  // Auto-highlight nav on scroll
+  const sections = ['l1','l2','l3'];
+  const navBtns = document.querySelectorAll('.nav-btn');
+  window.addEventListener('scroll', () => {
+    let current = 'l1';
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && window.scrollY >= el.offsetTop - 120) current = id;
+    });
+    navBtns.forEach((b,i) => b.classList.toggle('active', sections[i] === current));
+  });
+</script>
+</body>
+</html>

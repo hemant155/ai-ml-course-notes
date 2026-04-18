@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Phase 1 — Practice Hub</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: Arial, sans-serif;
+  background: #0d1117;
+  color: #e6edf3;
+  padding: 28px 20px 80px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+h1 { font-size:20px; font-weight:600; color:#fff; margin-bottom:4px; text-align:center; }
+.sub { font-size:12px; color:#555; text-align:center; margin-bottom:28px; }
+
+/* PROGRESS BAR */
+.progress-wrap { background:#161b22; border-radius:8px; padding:16px 20px; margin-bottom:28px; border:1px solid #222; }
+.progress-title { font-size:13px; font-weight:600; color:#fff; margin-bottom:10px; }
+.progress-bar-bg { height:8px; background:#1a1a2e; border-radius:4px; overflow:hidden; margin-bottom:6px; }
+.progress-bar-fill { height:100%; background:linear-gradient(90deg,#4c3a8c,#1d9e75); border-radius:4px; transition:width 0.4s; }
+.progress-text { font-size:11px; color:#555; }
+
+/* TOOL CARDS GRID */
+.tools-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; margin-bottom:28px; }
+
+.tool-card {
+  border-radius:12px; border:1px solid #222;
+  overflow:hidden; cursor:pointer;
+  transition:border-color 0.15s, transform 0.1s;
+}
+.tool-card:hover { border-color:#4c3a8c; transform:translateY(-1px); }
+.tool-card.done { border-color:#166534 !important; }
+.tool-card.active-card { border-color:#7c5af0 !important; }
+
+.tool-header {
+  padding:12px 16px;
+  display:flex; align-items:center; gap:10px;
+}
+.tool-num {
+  width:28px; height:28px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; flex-shrink:0;
+}
+.tool-name { font-size:13px; font-weight:700; flex:1; }
+.tool-tag {
+  font-size:10px; font-weight:700; padding:2px 7px;
+  border-radius:8px; white-space:nowrap;
+}
+.tag-always  { background:#1e3a5f; color:#7eb8f7; }
+.tag-special { background:#1a1200; color:#fbbf24; }
+.tag-train   { background:#2d1a00; color:#fca5a5; }
+
+.tool-sub { font-size:11px; padding:0 16px 12px; color:#555; line-height:1.6; }
+.tool-status {
+  padding:6px 16px; font-size:11px;
+  border-top:1px solid #161b22;
+  display:flex; align-items:center; gap:6px;
+}
+.status-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+/* PRACTICE AREA */
+#practiceArea { display:none; }
+.practice-panel {
+  background:#111827; border-radius:12px;
+  padding:24px; border:1px solid #222;
+}
+.panel-header {
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:20px; padding-bottom:16px;
+  border-bottom:1px solid #222;
+}
+.panel-icon { font-size:24px; }
+.panel-title { font-size:16px; font-weight:700; color:#fff; }
+.panel-tag { font-size:11px; padding:3px 10px; border-radius:8px; }
+
+/* TABS */
+.tabs { display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap; }
+.tab {
+  padding:7px 16px; border-radius:8px;
+  border:0.5px solid #333; background:#0d1117;
+  cursor:pointer; font-size:12px; color:#666;
+  transition:all 0.15s;
+}
+.tab.active { background:#1e1040; border-color:#7c5af0; color:#c4b5fd; font-weight:600; }
+
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* CONTENT STYLES */
+.concept-box {
+  background:#0a0f1a; border-radius:8px;
+  padding:14px 16px; margin-bottom:12px;
+  border:1px solid #1d4a7a;
+}
+.concept-title { font-size:12px; font-weight:700; color:#7eb8f7; margin-bottom:6px; }
+.concept-body  { font-size:12px; color:#aaa; line-height:1.8; }
+.formula-box {
+  background:#0d0d1f; border-radius:8px;
+  padding:12px 16px; margin-bottom:12px;
+  border:1px solid #3730a3;
+  font-family:monospace; font-size:13px;
+  color:#a5b4fc; line-height:2;
+}
+.components {
+  font-family:Arial,sans-serif; font-size:11px;
+  color:#555; margin-top:8px;
+  border-top:1px solid #1f2937; padding-top:8px;
+  line-height:1.9;
+}
+.analogy-box {
+  border-left:3px solid #fbbf24; background:#1a1200;
+  border-radius:0 8px 8px 0;
+  padding:10px 14px; margin-bottom:12px;
+  font-size:12px; color:#fde68a; line-height:1.7;
+}
+
+/* PROBLEM */
+.problem {
+  background:#0a1525; border-radius:8px;
+  padding:14px 16px; margin-bottom:12px;
+  border:1px solid #1d4a7a;
+}
+.problem-q { font-size:13px; color:#e6edf3; line-height:1.8; margin-bottom:10px; }
+.problem-input {
+  width:100%; background:#0d1117; border:1px solid #333;
+  border-radius:6px; padding:8px 12px;
+  font-family:monospace; font-size:13px; color:#e6edf3;
+  resize:vertical; min-height:60px; outline:none;
+}
+.problem-input:focus { border-color:#7c5af0; }
+
+.check-btn {
+  margin-top:8px; padding:8px 20px;
+  background:#1e1040; border:1px solid #7c5af0;
+  border-radius:8px; color:#c4b5fd;
+  cursor:pointer; font-size:12px; font-weight:600;
+  transition:background 0.15s;
+}
+.check-btn:hover { background:#2d1a5e; }
+
+.feedback {
+  margin-top:8px; padding:10px 14px;
+  border-radius:8px; font-size:12px;
+  display:none; line-height:1.7;
+}
+.feedback.correct { background:#0a2010; border:1px solid #166534; color:#4ade80; }
+.feedback.wrong   { background:#1a0808; border:1px solid #7a1d1d; color:#fca5a5; }
+.feedback.hint    { background:#1a1200; border:1px solid #7c5a00; color:#fde68a; }
+
+/* DONE BTN */
+.done-btn {
+  padding:10px 24px;
+  background:#0a2010; border:1px solid #166534;
+  border-radius:8px; color:#4ade80;
+  cursor:pointer; font-size:13px; font-weight:600;
+  margin-top:16px;
+}
+.done-btn:hover { background:#0d2a15; }
+
+.back-btn {
+  padding:8px 16px;
+  background:#111; border:1px solid #333;
+  border-radius:8px; color:#888;
+  cursor:pointer; font-size:12px;
+  margin-bottom:16px; display:inline-flex;
+  align-items:center; gap:6px;
+}
+.back-btn:hover { border-color:#555; color:#ccc; }
+
+/* HINT */
+.hint-toggle {
+  font-size:11px; color:#555; cursor:pointer;
+  margin-top:6px; display:inline-block;
+}
+.hint-toggle:hover { color:#888; }
+.hint-content {
+  display:none; margin-top:6px;
+  padding:8px 12px; background:#1a1200;
+  border-radius:6px; font-size:11px;
+  color:#fde68a; line-height:1.7;
+}
+</style>
+</head>
+<body>
+
+<h1>📚 Phase 1 — Practice Hub</h1>
+<div class="sub">Sirf Phase 1 mein padhe tools · Concept → Practice → Done</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-title">Progress — <span id="progressText">0 / 7 Complete</span></div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+  </div>
+  <div class="progress-text">Har tool complete karo — progress save hogi</div>
+</div>
+
+<!-- TOOL CARDS -->
+<div id="cardsView">
+<div class="tools-grid" id="toolsGrid"></div>
+</div>
+
+<!-- PRACTICE AREA -->
+<div id="practiceArea">
+  <button class="back-btn" onclick="goBack()">← Back to all tools</button>
+  <div id="practiceContent"></div>
+</div>
+
+<script>
+const tools = [
+  {
+    id: 0,
+    icon: '🔢',
+    name: 'Dot Product',
+    tag: 'Always · Core',
+    tagClass: 'tag-always',
+    color: '#7F77DD',
+    sub: 'Multiply karo, sab add karo. Har neuron iska use karta hai.',
+    concept: `Dot product do vectors ke beech "agreement" measure karta hai. Dono vectors ke corresponding elements multiply karo, sab add karo. Bada result = zyada similar. Yahi har neuron andar se karta hai — "mera input meri weights se kitna match karta hai?"`,
+    formula: `a · b = a₁×b₁ + a₂×b₂ + a₃×b₃ + ...\n\nExample:\na = [2, 3, 1]\nb = [4, 1, 5]\na·b = (2×4) + (3×1) + (1×5)\n    = 8 + 3 + 5\n    = 16`,
+    components: `a = first vector (input ya weights)\nb = second vector\n× = multiply corresponding elements\n+ = add all products\nResult = single number (scalar)`,
+    analogy: `🗳️ Voter jo candidates ko rate karta hai. Har criteria pe score × importance. Sab add karo = final vote. Neuron wahi karta hai — input × weight + sum.`,
+    problems: [
+      { q: 'a = [3, 1, 4], b = [2, 5, 1] → a·b = ?', answer: '15', explanation: '(3×2) + (1×5) + (4×1) = 6 + 5 + 4 = 15' },
+      { q: 'a = [1, 0, 1], b = [5, 9, 3] → a·b = ?', answer: '8', explanation: '(1×5) + (0×9) + (1×3) = 5 + 0 + 3 = 8' },
+      { q: 'Ek neuron ke inputs = [0.5, 0.8], weights = [0.3, 0.6], bias = 0.1. Output = ?', answer: '0.73', explanation: '(0.5×0.3) + (0.8×0.6) + 0.1 = 0.15 + 0.48 + 0.1 = 0.73' },
+    ]
+  },
+  {
+    id: 1,
+    icon: '🔲',
+    name: 'Matrix Multiplication',
+    tag: 'Always · Every Layer',
+    tagClass: 'tag-always',
+    color: '#7F77DD',
+    sub: 'Neural network ka engine. Har layer mein hota hai.',
+    concept: `Matrix multiplication ek transformation hai — data ko ek space se doosre space mein le jaata hai. Har layer mein yahi hota hai: Input × Weight = Output. Shape rule: (m×n)·(n×p) = (m×p). Inner dimensions match karni chahiye.`,
+    formula: `Z = X · W\nShape: (m×n) · (n×p) = (m×p)\n\nResult[i][j] = Row i of X · Column j of W\n             = Σ (X[i][k] × W[k][j])\n\nExample:\nX = [[1,2],[3,4]]  W = [[5,6],[7,8]]\nResult[0][0] = (1×5)+(2×7) = 5+14 = 19\nResult[0][1] = (1×6)+(2×8) = 6+16 = 22\nResult[1][0] = (3×5)+(4×7) = 15+28 = 43\nResult[1][1] = (3×6)+(4×8) = 18+32 = 50`,
+    components: `X = input matrix\nW = weight matrix (jo AI seekhta hai)\n· = matrix multiply (NOT element-wise)\nInner dims match: (m×n)·(n×p) — middle n same hona chahiye\nResult shape: (m×p)`,
+    analogy: `🏭 Factory assembly line. Input raw material (X) ek machine (W) se guzarta hai. Output naya product. Har layer ek alag machine hai.`,
+    problems: [
+      { q: 'Shapes: A=(3×4), B=(4×2). Kya multiply ho sakta hai? Result shape kya hoga?', answer: 'haan, 3x2', explanation: 'Inner dims: 4=4 ✓. Result = (3×2).' },
+      { q: 'Shapes: A=(5×3), B=(4×2). Kya multiply ho sakta hai?', answer: 'nahi', explanation: 'Inner dims: 3≠4. ✗ Invalid.' },
+      { q: 'A=[[1,2],[3,4]], B=[[1,0],[0,1]]. A·B = ?', answer: '[[1,2],[3,4]]', explanation: 'B is identity matrix. A·I = A hamesha.' },
+      { q: 'Neural network: Input shape (100×784), Weight shape (784×128). Output shape?', answer: '100x128', explanation: '(100×784)·(784×128) = (100×128). 100 samples, 128 neurons.' },
+    ]
+  },
+  {
+    id: 2,
+    icon: '➕',
+    name: 'Bias Add',
+    tag: 'Always · Every Layer',
+    tagClass: 'tag-always',
+    color: '#7F77DD',
+    sub: 'Z·W ke baad bias add karo. Offset joda jaata hai.',
+    concept: `Bias ek adjustment hai jo matrix multiplication ke baad add hota hai. Iske bina, neuron sirf zero pe centered hota — flexibility nahi hoti. Bias allow karta hai neuron ko shift karne ki — even when input = 0, neuron fire kar sakta hai.`,
+    formula: `Z = X · W + b\n\nExample:\nX·W result = [2.1, -0.5, 1.3]\nb           = [0.5,  0.5, 0.5]\nZ           = [2.6,  0.0, 1.8]\n\nHar neuron ka apna ek bias value hota hai.`,
+    components: `X·W = matrix multiply result\nb = bias vector (ek value per neuron)\n+ = simple addition (element-wise)\nb ka shape = number of neurons in layer`,
+    analogy: `🌡️ Thermometer. Sahi temperature 20° hai lekin thermometer 2° zyada dikhata hai — bias hai. Bias correct karta hai is systematic offset ko.`,
+    problems: [
+      { q: 'Layer output before bias: [1.5, -0.3, 2.1]. Bias: [0.2, 0.5, -0.1]. Z = ?', answer: '[1.7, 0.2, 2.0]', explanation: '1.5+0.2=1.7, -0.3+0.5=0.2, 2.1-0.1=2.0' },
+      { q: 'Z = X·W + b. X·W = [[3,-1],[0,2]], b = [1,2]. Z = ?', answer: '[[4,1],[1,4]]', explanation: 'Row 1: [3+1,-1+2]=[4,1]. Row 2: [0+1,2+2]=[1,4].' },
+    ]
+  },
+  {
+    id: 3,
+    icon: '🔄',
+    name: 'Softmax',
+    tag: 'Always · Last Layer',
+    tagClass: 'tag-always',
+    color: '#1D9E75',
+    sub: 'Raw scores → probabilities. Sum = 1 hamesha.',
+    concept: `Softmax raw scores (logits) ko proper probabilities mein convert karta hai. Har score par e raise karo (e=2.718, hamesha positive), sab add karo, phir divide karo. Result: sab values 0-1 ke beech, sum exactly 1.0.`,
+    formula: `softmax(zᵢ) = e^zᵢ / Σ(e^zⱼ)\n\ne = 2.71828 (Euler's number — hamesha positive)\n\nExample:\nLogits: [2.0, 1.0, 0.1]\ne^2.0 = 7.389\ne^1.0 = 2.718\ne^0.1 = 1.105\nTotal = 11.212\n\nSoftmax:\n[7.389/11.212, 2.718/11.212, 1.105/11.212]\n= [0.659, 0.242, 0.099]\n= [65.9%, 24.2%,  9.9%] ← sum = 100% ✓`,
+    components: `zᵢ = raw score (logit) for class i\ne^z = exponential — negative values bhi positive bante hain\nΣ = sum of ALL e^z values\nResult = probability between 0 and 1\nSum of all results = exactly 1.0`,
+    analogy: `📊 Votes ko percentage mein convert karo. Tiger: 8 votes, Zebra: 3 votes, Cat: 1 vote. Total=12. Tiger: 8/12=67%, Zebra:25%, Cat:8%. Softmax wahi karta hai — but e^ se size amplify karta hai.`,
+    problems: [
+      { q: 'Logits: [1.0, 1.0, 1.0]. Softmax = ? (Sochke bolo bina calculate kiye)', answer: '[0.33, 0.33, 0.33]', explanation: 'Sab equal logits → sab equal probability. 33.3% each. Model has no preference.' },
+      { q: 'Logits: [10.0, 0.0, 0.0]. Softmax mein kaunsa class dominant hoga? Kyun?', answer: 'class 1 (almost 100%)', explanation: 'e^10 = 22026, e^0 = 1. Ratio 22026:1:1. First class almost 100%.' },
+      { q: 'Logits: [3.0, 1.0, -2.0]. e^3=20.09, e^1=2.72, e^-2=0.14. Total=22.95. Softmax = ?', answer: '[0.875, 0.118, 0.006]', explanation: '20.09/22.95=0.875, 2.72/22.95=0.118, 0.14/22.95=0.006. Sum=0.999≈1 ✓' },
+    ]
+  },
+  {
+    id: 4,
+    icon: '📐',
+    name: 'Cosine Similarity',
+    tag: 'Special · Text/Recommend',
+    tagClass: 'tag-special',
+    color: '#EF9F27',
+    sub: 'Size ko ignore karo. Sirf direction compare karo.',
+    concept: `Cosine similarity dot product ka improved version hai. Problem: dot product size se affect hota hai — bada vector = bada score, chahe direction same na ho. Cosine similarity vectors ki length se divide karke size ka effect remove karti hai. Sirf direction matter karti hai. Result: -1 to +1.`,
+    formula: `cos_sim(a,b) = (a·b) / (|a| × |b|)\n\n|a| = √(a₁² + a₂² + ...) ← vector ki length (modulus)\n\nExample:\na = [3, 4]   |a| = √(9+16) = √25 = 5\nb = [6, 8]   |b| = √(36+64) = √100 = 10\na·b = (3×6)+(4×8) = 18+32 = 50\ncos_sim = 50 / (5×10) = 50/50 = 1.0\n\nPerfect similarity! (b = 2×a — same direction)`,
+    components: `a·b = dot product (numerator)\n|a| = length of vector a = √(Σaᵢ²)\n|b| = length of vector b\nResult range: -1 to +1\n+1 = identical direction\n0 = perpendicular (no relation)\n-1 = opposite direction`,
+    analogy: `🧭 Compass direction. Two people walking — ek 100km north gaya, doosra 10km north gaya. Dot product alag hoga (100 vs 10) — cosine similarity same (1.0) kyunki dono north ja rahe the.`,
+    problems: [
+      { q: 'a = [1, 0], b = [0, 1]. Cosine similarity = ? (Sochke bolo)', answer: '0', explanation: 'a·b = 0. |a|=1, |b|=1. cos_sim = 0/1 = 0. Perpendicular vectors — no similarity.' },
+      { q: 'a = [1, 1], b = [-1, -1]. Cosine similarity = ?', answer: '-1', explanation: 'a·b = -1-1 = -2. |a|=√2, |b|=√2. cos_sim = -2/(√2×√2) = -2/2 = -1. Opposite direction.' },
+      { q: 'a = [3, 0], b = [5, 0]. cos_sim = ? Matlab kya hai?', answer: '1', explanation: 'Same direction (both x-axis). Size alag hai lekin direction same. cos_sim = 1.0 always when same direction.' },
+      { q: 'King=[0.9,0.1,0.8], Queen=[0.8,0.9,0.7]. Dot product = ? |King|= ? (approx)', answer: 'dot=1.29, |King|≈1.21', explanation: '(0.9×0.8)+(0.1×0.9)+(0.8×0.7)=0.72+0.09+0.56=1.37. |King|=√(0.81+0.01+0.64)=√1.46≈1.21' },
+    ]
+  },
+  {
+    id: 5,
+    icon: '📉',
+    name: 'Cross-Entropy Loss',
+    tag: 'Training Only',
+    tagClass: 'tag-train',
+    color: '#D85A30',
+    sub: 'Model kitna galat tha? Confident + galat = huge penalty.',
+    concept: `Cross-Entropy Loss classification mein model ki galti measure karta hai. Sirf correct class ki probability matter karti hai. -log(correct_prob) leta hai — agar probability high thi (model sahi tha) → loss small. Agar probability low thi (model galat tha) → loss large. Log function ensure karta hai exponential penalty.`,
+    formula: `L = -log(correct class ki probability)\n  = -log(ŷ_correct)\n\nExamples:\nTrue=Cat, pred Cat=0.95 → L=-log(0.95)=0.051 ✓ small\nTrue=Cat, pred Cat=0.50 → L=-log(0.50)=0.693 medium\nTrue=Cat, pred Cat=0.05 → L=-log(0.05)=2.996 ✗ large\nTrue=Cat, pred Cat=0.01 → L=-log(0.01)=4.605 ✗✗ huge\n\nOne-hot label: True=Cat → [1,0,0]\nAI output:               → [0.95,0.03,0.02]\nL = -(1×log(0.95)) + -(0×log(0.03)) + -(0×log(0.02))\n  = -log(0.95) = 0.051`,
+    components: `L = loss value (lower = better)\nŷ_correct = model ki predicted prob for TRUE class\nlog = natural logarithm (base e)\n-  = log of prob is negative, minus makes positive\nOther classes: y=0 → 0×log(x)=0 → don't contribute`,
+    analogy: `⚖️ Court mein judge. Agar doctor 99% confident tha ki patient theek hai lekin patient tha bimar — judgment bahut harsh. Agar doctor 50% confident tha — mild judgment. Confidence level × galti = penalty.`,
+    problems: [
+      { q: 'True=Dog. Model output: [Cat:0.1, Dog:0.8, Bird:0.1]. Loss = -log(0.8) = ? (log(0.8)=-0.223)', answer: '0.223', explanation: 'True class = Dog. Its probability = 0.8. L = -log(0.8) = -(-0.223) = 0.223. Small loss — model was mostly right.' },
+      { q: 'True=Cat. Model output: [Cat:0.02, Dog:0.95, Bird:0.03]. Loss = -log(0.02) = ? (log(0.02)=-3.912)', answer: '3.912', explanation: 'True class = Cat. Its probability = 0.02. L = -log(0.02) = 3.912. Huge loss — model was confidently wrong!' },
+      { q: 'Model A: pred correct class = 0.9. Model B: pred correct class = 0.6. Kaunsa better hai aur kyun?', answer: 'Model A', explanation: 'Model A loss = -log(0.9) = 0.105. Model B loss = -log(0.6) = 0.511. Lower loss = better. Model A was more confident and correct.' },
+    ]
+  },
+  {
+    id: 6,
+    icon: '🔮',
+    name: 'Sigmoid',
+    tag: 'Special · Binary',
+    tagClass: 'tag-special',
+    color: '#EF9F27',
+    sub: 'Binary output — 0 ya 1. Yes ya No.',
+    concept: `Sigmoid ek function hai jo koi bhi number ko 0 aur 1 ke beech le aata hai. Isliye binary classification mein use hota hai — "Spam ya Not Spam?", "Cat ya Not Cat?" Output directly probability hai — softmax ki zaroorat nahi single output ke liye.`,
+    formula: `σ(z) = 1 / (1 + e⁻ᶻ)\n\ne = 2.71828\n\nExamples:\nσ(0)   = 1/(1+e⁰)   = 1/(1+1)    = 0.5   ← uncertain\nσ(2)   = 1/(1+e⁻²)  = 1/(1+0.14) = 0.88  ← probably yes\nσ(-2)  = 1/(1+e²)   = 1/(1+7.39) = 0.12  ← probably no\nσ(5)   = 1/(1+e⁻⁵)  ≈ 0.993             ← very confident yes\nσ(-5)  = 1/(1+e⁵)   ≈ 0.007             ← very confident no`,
+    components: `z = raw score (any number)\ne = Euler's number 2.71828\ne⁻ᶻ = exponential of negative z\nResult range: strictly 0 to 1\n0.5 = completely uncertain\n>0.5 = leaning yes\n<0.5 = leaning no`,
+    analogy: `🌅 Sunset dimmer. Bilkul andhera=0, bilkul roshan=1. Koi bhi number dalo — sigmoid ek smooth transition deta hai 0 aur 1 ke beech. Abrupt jump nahi — gradual.`,
+    problems: [
+      { q: 'z = 0 pe sigmoid kya hoga? Matlab kya hai AI context mein?', answer: '0.5', explanation: 'σ(0) = 0.5. Model has no preference — 50/50. Completely uncertain.' },
+      { q: 'z = -10 pe sigmoid approximately kya hoga?', answer: '~0 (almost 0)', explanation: 'e^10 = 22026. σ(-10) = 1/(1+22026) ≈ 0.0000454. Essentially 0. Very confident NO.' },
+      { q: 'Spam filter: z = 3.5. σ(3.5) ≈ 0.97. Kya yeh email spam hai?', answer: 'haan — 97% spam', explanation: 'σ(3.5) = 0.97 means 97% probability of spam. Above 0.5 threshold → classified as Spam.' },
+    ]
+  },
+];
+
+let doneSet = new Set();
+let currentTool = null;
+let currentProblem = 0;
+
+function updateProgress() {
+  const pct = Math.round((doneSet.size / tools.length) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${doneSet.size} / ${tools.length} Complete`;
+}
+
+function renderCards() {
+  const grid = document.getElementById('toolsGrid');
+  grid.innerHTML = tools.map(t => `
+    <div class="tool-card ${doneSet.has(t.id)?'done':''}" onclick="openTool(${t.id})">
+      <div class="tool-header" style="background:${t.color}18;">
+        <div class="tool-num" style="background:${t.color}33;color:${t.color};">${t.icon}</div>
+        <div>
+          <div class="tool-name" style="color:${doneSet.has(t.id)?'#4ade80':'#fff'};">${t.name}</div>
+          <span class="tool-tag ${t.tagClass}">${t.tag}</span>
+        </div>
+        ${doneSet.has(t.id)?'<span style="color:#4ade80;font-size:18px;margin-left:auto;">✓</span>':''}
+      </div>
+      <div class="tool-sub">${t.sub}</div>
+      <div class="tool-status">
+        <div class="status-dot" style="background:${doneSet.has(t.id)?'#4ade80':'#333'};"></div>
+        <span style="font-size:11px;color:${doneSet.has(t.id)?'#4ade80':'#444'};">
+          ${doneSet.has(t.id)?'Complete — click to review':'Click to practice'}
+        </span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openTool(id) {
+  currentTool = tools.find(t => t.id === id);
+  currentProblem = 0;
+  document.getElementById('cardsView').style.display = 'none';
+  document.getElementById('practiceArea').style.display = 'block';
+  renderPractice();
+  window.scrollTo(0,0);
+}
+
+function goBack() {
+  document.getElementById('cardsView').style.display = 'block';
+  document.getElementById('practiceArea').style.display = 'none';
+  renderCards();
+  updateProgress();
+}
+
+function renderPractice() {
+  const t = currentTool;
+  document.getElementById('practiceContent').innerHTML = `
+    <div class="practice-panel">
+      <div class="panel-header">
+        <div class="panel-icon">${t.icon}</div>
+        <div>
+          <div class="panel-title">${t.name}</div>
+          <span class="tool-tag ${t.tagClass}" style="font-size:11px;padding:2px 8px;border-radius:6px;">${t.tag}</span>
+        </div>
+      </div>
+
+      <div class="tabs" id="practiceTabs">
+        <div class="tab active" onclick="showTab(0)">Concept</div>
+        <div class="tab" onclick="showTab(1)">Formula</div>
+        <div class="tab" onclick="showTab(2)">Analogy</div>
+        <div class="tab" onclick="showTab(3)">Practice</div>
+      </div>
+
+      <!-- CONCEPT -->
+      <div class="tab-content active" id="tabContent0">
+        <div class="concept-box">
+          <div class="concept-title">Kya hai aur kyun?</div>
+          <div class="concept-body">${t.concept}</div>
+        </div>
+      </div>
+
+      <!-- FORMULA -->
+      <div class="tab-content" id="tabContent1">
+        <div class="formula-box">
+          <pre style="white-space:pre-wrap;">${t.formula}</pre>
+          <div class="components">${t.components}</div>
+        </div>
+      </div>
+
+      <!-- ANALOGY -->
+      <div class="tab-content" id="tabContent2">
+        <div class="analogy-box">${t.analogy}</div>
+        <div class="concept-box">
+          <div class="concept-title">AI se connection</div>
+          <div class="concept-body">${t.concept}</div>
+        </div>
+      </div>
+
+      <!-- PRACTICE -->
+      <div class="tab-content" id="tabContent3">
+        ${t.problems.map((p,i) => `
+          <div class="problem" id="prob${i}">
+            <div class="problem-q"><strong style="color:#7eb8f7;">Q${i+1}.</strong> ${p.q}</div>
+            <textarea class="problem-input" id="ans${i}" placeholder="Apna answer yahaan likho..."></textarea>
+            <span class="hint-toggle" onclick="toggleHint(${i})">💡 Hint dekhna hai?</span>
+            <div class="hint-content" id="hint${i}">Pehle khud try karo. Phir check karo. Agar stuck ho toh: ${p.explanation}</div>
+            <br>
+            <button class="check-btn" onclick="checkAnswer(${i})">Check Answer</button>
+            <div class="feedback" id="fb${i}"></div>
+          </div>
+        `).join('')}
+        <button class="done-btn" onclick="markDone()">✓ Mark as Complete — Next Tool</button>
+      </div>
+    </div>
+  `;
+}
+
+function showTab(idx) {
+  document.querySelectorAll('.tab-content').forEach((el,i) => {
+    el.classList.toggle('active', i===idx);
+  });
+  document.querySelectorAll('#practiceTabs .tab').forEach((el,i) => {
+    el.classList.toggle('active', i===idx);
+  });
+}
+
+function toggleHint(i) {
+  const h = document.getElementById('hint'+i);
+  h.style.display = h.style.display==='block'?'none':'block';
+}
+
+function checkAnswer(i) {
+  const p = currentTool.problems[i];
+  const userAns = document.getElementById('ans'+i).value.trim().toLowerCase();
+  const correct = p.answer.toLowerCase();
+  const fb = document.getElementById('fb'+i);
+  fb.style.display = 'block';
+
+  // Flexible check — contains key numbers/words
+  const keyWords = correct.split(/[,\s×\/]+/).filter(w=>w.length>0);
+  const matched = keyWords.some(k => userAns.includes(k));
+
+  if(matched || userAns.includes(correct)) {
+    fb.className = 'feedback correct';
+    fb.innerHTML = `✓ Sahi! ${p.explanation}`;
+  } else if(userAns.length > 0) {
+    fb.className = 'feedback wrong';
+    fb.innerHTML = `✗ Phir try karo. Hint: ${p.explanation}`;
+  } else {
+    fb.className = 'feedback hint';
+    fb.innerHTML = `Answer likhna padega pehle!`;
+  }
+}
+
+function markDone() {
+  doneSet.add(currentTool.id);
+  const nextId = (currentTool.id + 1) % tools.length;
+  const next = tools.find(t => t.id === nextId && !doneSet.has(t.id));
+  goBack();
+  if(doneSet.size === tools.length) {
+    setTimeout(()=>alert('🎉 Sab complete! Phase 1 tools mastered. Phase 2 ke liye ready!'),300);
+  }
+}
+
+// Init
+renderCards();
+updateProgress();
+</script>
+</body>
+</html>

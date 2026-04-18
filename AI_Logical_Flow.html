@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AI Logical Flow — Decision Map</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Arial, sans-serif;
+  background: #0d1117;
+  color: #e6edf3;
+  padding: 32px 20px 80px;
+}
+
+h1 { text-align:center; font-size:20px; font-weight:600; color:#fff; margin-bottom:4px; }
+.subtitle { text-align:center; font-size:12px; color:#555; margin-bottom:36px; }
+
+.chart {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* ── NODE TYPES ── */
+.node {
+  width: 100%;
+  border-radius: 10px;
+  padding: 13px 18px;
+  position: relative;
+}
+.node-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.node-sub   { font-size: 12px; opacity: 0.75; line-height: 1.6; }
+.node-math  {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  background: rgba(0,0,0,0.35);
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+/* Diamond decision */
+.diamond-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.diamond {
+  background: #1a1030;
+  border: 2px solid #7c5af0;
+  border-radius: 6px;
+  transform: rotate(2deg);
+  padding: 12px 24px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #c4b5fd;
+  min-width: 260px;
+  max-width: 360px;
+}
+.diamond-q {
+  font-size: 11px;
+  color: #888;
+  margin-top: 3px;
+}
+.branch-row {
+  display: flex;
+  width: 100%;
+  gap: 16px;
+  margin-top: 0;
+}
+.branch {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.branch-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 12px;
+  border-radius: 10px;
+  margin: 4px 0;
+}
+.yes  { background: #0d2e0d; color: #4ade80; }
+.no   { background: #2e0d0d; color: #f87171; }
+.case { background: #1a1400; color: #fbbf24; }
+
+/* Connector arrows */
+.arr-down {
+  text-align: center;
+  color: #333;
+  font-size: 18px;
+  line-height: 1;
+  margin: 2px 0;
+  width: 100%;
+}
+.arr-small { font-size: 14px; color: #333; margin: 1px 0; }
+
+/* Color themes */
+.c-input  { background:#0d0d1f; border:1px solid #3730a3; }
+.c-input .node-title  { color:#818cf8; }
+
+.c-la     { background:#0f0a2e; border:1px solid #4c3a8c; }
+.c-la .node-title     { color:#c4b5fd; }
+
+.c-fwd    { background:#0a2010; border:1px solid #166534; }
+.c-fwd .node-title    { color:#86efac; }
+
+.c-soft   { background:#1a1200; border:1px solid #854d0e; }
+.c-soft .node-title   { color:#fde68a; }
+
+.c-ans    { background:#0a2020; border:1px solid #0e7490; }
+.c-ans .node-title    { color:#67e8f9; }
+
+.c-loss   { background:#2a0a00; border:1px solid #9a3412; }
+.c-loss .node-title   { color:#fdba74; }
+
+.c-back   { background:#0f0a2e; border:1px solid #4c3a8c; }
+.c-back .node-title   { color:#a5b4fc; }
+
+.c-gd     { background:#0a1f1a; border:1px solid #065f46; }
+.c-gd .node-title     { color:#6ee7b7; }
+
+.c-done   { background:#0a2010; border:2px solid #16a34a; }
+.c-done .node-title   { color:#4ade80; }
+
+.c-special { background:#1a0808; border-left:3px solid #e94560; border-radius:0 8px 8px 0; }
+.c-special .node-title { color:#fca5a5; }
+
+.c-skip   { background:#111; border:1px dashed #333; }
+.c-skip .node-title   { color:#555; }
+
+/* Badge */
+.badge {
+  font-size: 10px; font-weight:700; letter-spacing:0.5px;
+  padding: 1px 7px; border-radius: 8px;
+  display: inline-block; margin-left:6px; vertical-align:middle;
+}
+.b-always { background:#1e3a5f; color:#7eb8f7; }
+.b-train  { background:#2d1a00; color:#fbbf24; }
+.b-skip   { background:#1a1a1a; color:#555; }
+
+/* Bypass arrow visual */
+.bypass-box {
+  border: 1px dashed #333;
+  border-radius: 8px;
+  padding: 8px 14px;
+  text-align: center;
+  font-size: 11px;
+  color: #555;
+  font-style: italic;
+}
+
+/* Legend */
+.legend {
+  display:flex; flex-wrap:wrap; gap:12px;
+  justify-content:center; margin-bottom:32px;
+}
+.li { display:flex; align-items:center; gap:6px; font-size:11px; color:#888; }
+.ld { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+
+/* Wide node */
+.wide { max-width: 860px; width: 100%; }
+
+/* Horizontal split */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Final summary */
+.summary {
+  width:100%;
+  background:#0a1a0a;
+  border:1px solid #166534;
+  border-radius:12px;
+  padding:20px 24px;
+}
+.summary-title { font-size:14px; font-weight:700; color:#4ade80; margin-bottom:14px; text-align:center; }
+.summary-row {
+  display:flex; gap:12px; margin-bottom:8px;
+  align-items:flex-start;
+}
+.step-num {
+  width:24px; height:24px; border-radius:50%;
+  background:#166534; color:#fff;
+  font-size:11px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; margin-top:1px;
+}
+.step-text { font-size:12px; color:#aaa; line-height:1.6; }
+.step-text strong { color:#e6edf3; }
+</style>
+</head>
+<body>
+
+<h1>🤖 AI Ka Logical Flow — Decision Map</h1>
+<div class="subtitle">Har kadam mein kya decide hota hai · Kab bypass hota hai · Kab special case</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="li"><div class="ld" style="background:#3730a3;"></div>Input Processing</div>
+  <div class="li"><div class="ld" style="background:#4c3a8c;"></div>Linear Algebra</div>
+  <div class="li"><div class="ld" style="background:#166534;"></div>Forward Pass</div>
+  <div class="li"><div class="ld" style="background:#854d0e;"></div>Probability</div>
+  <div class="li"><div class="ld" style="background:#9a3412;"></div>Training Only</div>
+  <div class="li"><div class="ld" style="background:#065f46;"></div>Done / Output</div>
+  <div class="li"><div class="ld" style="background:#7c5af0;border-radius:50%;"></div>Decision Point</div>
+  <div class="li"><div class="ld" style="background:#e94560;"></div>Special Case</div>
+</div>
+
+<div class="chart">
+
+  <!-- ══ START ══ -->
+  <div class="node c-input wide">
+    <div class="node-title">📥 User Input Aaya <span class="badge b-always">Always</span></div>
+    <div class="node-sub">Image / Text / Audio — kuch bhi. AI ke liye pehla kaam: yeh samajhna ki input kya hai.</div>
+  </div>
+
+  <div class="arr-down">↓</div>
+
+  <!-- ══ DECISION 1 ══ -->
+  <div class="diamond-wrap">
+    <div class="diamond">
+      Input ka type kya hai?
+      <div class="diamond-q">Image · Text · Number</div>
+    </div>
+  </div>
+
+  <div class="arr-down">↓</div>
+
+  <!-- BRANCH: INPUT TYPE -->
+  <div class="branch-row">
+    <div class="branch">
+      <div class="branch-label case">🖼️ Image</div>
+      <div class="arr-small">↓</div>
+      <div class="node c-la" style="width:100%;">
+        <div class="node-title">Pixels → Tensor</div>
+        <div class="node-sub">Har pixel = 3 numbers (R,G,B). 224×224 image = 150,528 numbers.</div>
+        <div class="node-math">(224, 224, 3) tensor</div>
+      </div>
+    </div>
+    <div class="branch">
+      <div class="branch-label case">💬 Text</div>
+      <div class="arr-small">↓</div>
+      <div class="node c-la" style="width:100%;">
+        <div class="node-title">Words → Embedding Vectors</div>
+        <div class="node-sub">Har word → ID → dense vector. "Cat" → [0.8, 0.3, 0.9...]</div>
+        <div class="node-math">(seq_len, embed_dim) matrix</div>
+      </div>
+    </div>
+    <div class="branch">
+      <div class="branch-label case">🔢 Numbers</div>
+      <div class="arr-small">↓</div>
+      <div class="node c-la" style="width:100%;">
+        <div class="node-title">Normalize → Vector</div>
+        <div class="node-sub">Features normalize karo. [age, income] → [0.3, 0.7] range 0-1.</div>
+        <div class="node-math">[n_features] vector</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arr-down">↓ &nbsp;&nbsp; (Sab alag inputs yahan ek jaisi cheez ban jaate hain — numbers ki grid)</div>
+
+  <!-- ══ FORWARD PASS ══ -->
+  <div class="node c-fwd wide">
+    <div class="node-title">⏩ Forward Pass Shuru <span class="badge b-always">Always — Hamesha</span></div>
+    <div class="node-sub">Data layer by layer guzarta hai. Har layer ek kaam karti hai. Ek direction — aage hi aage.</div>
+    <div class="node-math">Output = Activation(X · W + b) &nbsp;← har layer mein yahi hota hai</div>
+  </div>
+
+  <div class="arr-down">↓</div>
+
+  <!-- LAYERS -->
+  <div class="split">
+    <div class="node c-fwd">
+      <div class="node-title">Layer 1 — Simple Patterns</div>
+      <div class="node-sub">Edges, lines, corners detect karta hai. W1 = (input × 512).</div>
+      <div class="node-math">X · W1 + b1</div>
+    </div>
+    <div class="node c-fwd">
+      <div class="node-title">Layer 2,3... — Complex Patterns</div>
+      <div class="node-sub">Shapes → Parts → Objects. Har layer pichli layer ka output leta hai.</div>
+      <div class="node-math">L2_out · W2 + b2 → ...</div>
+    </div>
+  </div>
+
+  <div class="arr-down">↓</div>
+
+  <div class="node c-fwd wide">
+    <div class="node-title">Output Layer — Raw Scores (Logits)</div>
+    <div class="node-sub">Final layer — har class ke liye ek score. Koi bhi number ho sakta hai — positive, negative.</div>
+    <div class="node-math">Cat: 2.3 &nbsp; Dog: -0.8 &nbsp; Bird: 0.1 &nbsp;← sirf numbers, abhi probabilities nahi</div>
+  </div>
+
+  <div class="arr-down">↓</div>
+
+  <!-- ══ SOFTMAX ══ -->
+  <div class="node c-soft wide">
+    <div class="node-title">🔄 Softmax — Scores → Probabilities <span class="badge b-always">Always</span></div>
+    <div class="node-sub">e^x se sab positive banao. Total se divide karo. Sum = 1 hamesha.</div>
+    <div class="node-math">softmax(zᵢ) = e^zᵢ / Σ(e^zⱼ) &nbsp;· &nbsp; e = 2.71828 (hamesha positive)</div>
+  </div>
+
+  <div class="arr-down">↓</div>
+
+  <!-- ══ DECISION 2: CONFIDENCE ══ -->
+  <div class="diamond-wrap">
+    <div class="diamond">
+      Kisi class ki probability high hai?
+      <div class="diamond-q">Threshold check — e.g. &gt; 70%?</div>
+    </div>
+  </div>
+
+  <div class="branch-row">
+    <div class="branch">
+      <div class="branch-label yes">✓ Haan — Confident</div>
+      <div class="arr-small">↓</div>
+      <div class="node c-ans" style="width:100%;">
+        <div class="node-title">Answer Diya ✓</div>
+        <div class="node-sub">Highest probability wali class choose karo. User ko bolo.</div>
+        <div class="node-math">"Cat — 95.7% confident"</div>
+      </div>
+    </div>
+    <div class="branch">
+      <div class="branch-label no">✗ Nahi — Uncertain</div>
+      <div class="arr-small">↓</div>
+      <div class="node c-special" style="width:100%;">
+        <div class="node-title">⚠️ Special Case — Low Confidence</div>
+        <div class="node-sub">Cat: 52%, Dog: 48% — bahut close. Galat confident answer se better hai honest uncertainty.</div>
+        <div class="node-math">"I'm not sure — can you give clearer image?"</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arr-down">↓</div>
+
+  <!-- ══ DECISION 3: INFERENCE OR TRAINING ══ -->
+  <div class="diamond-wrap">
+    <div class="diamond">
+      Yeh Inference hai ya Training?
+      <div class="diamond-q">Kya AI abhi sirf use ho raha hai, ya seekh raha hai?</div>
+    </div>
+  </div>
+
+  <div class="branch-row">
+
+    <!-- INFERENCE BRANCH -->
+    <div class="branch">
+      <div class="branch-label yes">✓ Inference — User Use Kar Raha</div>
+      <div class="arr-small">↓</div>
+      <div class="node c-done" style="width:100%;">
+        <div class="node-title">🏁 DONE — Ruk Jaao</div>
+        <div class="node-sub">Weights already trained hain. Lock hain. Koi backward pass nahi. Koi update nahi. Answer diya — kaam khatam.</div>
+      </div>
+      <div class="arr-small">↓</div>
+      <div class="bypass-box" style="width:100%;">
+        Steps 4-7 (Loss, Backprop, Gradient, Update)<br>
+        ← BYPASS — bilkul nahi hote inference mein
+      </div>
+    </div>
+
+    <!-- TRAINING BRANCH -->
+    <div class="branch">
+      <div class="branch-label case">🔄 Training — AI Seekh Raha</div>
+      <div class="arr-small">↓</div>
+
+      <div class="node c-loss" style="width:100%;">
+        <div class="node-title">Loss Calculate Karo <span class="badge b-train">Training</span></div>
+        <div class="node-sub">Answer key se compare karo. Kitna galat tha?</div>
+        <div class="node-math">L = -log(correct class prob)</div>
+        <div class="node-math">True label = One-Hot [1,0,0]</div>
+      </div>
+
+      <div class="arr-small">↓</div>
+
+      <!-- DECISION 4: HOW WRONG -->
+      <div class="diamond" style="min-width:unset;width:100%;font-size:12px;">
+        Loss kitna bada hai?
+        <div class="diamond-q">Near zero vs Large</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin-top:4px;">
+        <div>
+          <div class="branch-label yes" style="text-align:center;display:block;margin-bottom:3px;">Loss ≈ 0</div>
+          <div class="node c-done" style="padding:8px 10px;">
+            <div class="node-title" style="font-size:11px;">Sahi tha ✓</div>
+            <div class="node-sub" style="font-size:10px;">Weights barely change. Small gradient. Small update.</div>
+          </div>
+        </div>
+        <div>
+          <div class="branch-label no" style="text-align:center;display:block;margin-bottom:3px;">Loss Large</div>
+          <div class="node c-loss" style="padding:8px 10px;">
+            <div class="node-title" style="font-size:11px;">Bahut galat ✗</div>
+            <div class="node-sub" style="font-size:10px;">Big gradient. Big weight update. Aggressive correction.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arr-small">↓</div>
+
+      <div class="node c-back" style="width:100%;">
+        <div class="node-title">⏪ Backward Pass — Backpropagation <span class="badge b-train">Training</span></div>
+        <div class="node-sub">Ulti direction. Output → pehli layer tak. Har weight ka gradient nikalo.</div>
+        <div class="node-math">dL/dW = Chain Rule (Outer × Inner)</div>
+        <div class="node-math">Last layer → ... → First layer</div>
+      </div>
+
+      <div class="arr-small">↓</div>
+
+      <!-- SPECIAL: VANISHING -->
+      <div class="node c-special" style="width:100%;">
+        <div class="node-title">⚠️ Special — Vanishing Gradient</div>
+        <div class="node-sub">Deep layers mein gradient → 0. Pehli layers seekh nahi paatein. Fix: ReLU (Phase 3).</div>
+      </div>
+
+      <div class="arr-small">↓</div>
+
+      <div class="node c-gd" style="width:100%;">
+        <div class="node-title">Gradient Descent — Weights Update <span class="badge b-train">Training</span></div>
+        <div class="node-sub">Har weight thoda move karo — loss kam karne ki direction mein.</div>
+        <div class="node-math">w = w - α × (dL/dw)</div>
+        <div class="node-math">α = learning rate (tune set karta hai)</div>
+      </div>
+
+      <div class="arr-small">↓</div>
+
+      <!-- DECISION 5: ALPHA -->
+      <div class="diamond" style="min-width:unset;width:100%;font-size:12px;">
+        Alpha (α) sahi hai?
+        <div class="diamond-q">Too small / Just right / Too large</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;width:100%;margin-top:4px;">
+        <div class="node c-special" style="padding:7px 8px;">
+          <div class="node-title" style="font-size:10px;">⚠️ Too Small</div>
+          <div class="node-sub" style="font-size:9px;">Bahut slow. Hazaaron epochs bhi kuch nahi.</div>
+        </div>
+        <div class="node c-gd" style="padding:7px 8px;">
+          <div class="node-title" style="font-size:10px;">✓ Just Right</div>
+          <div class="node-sub" style="font-size:9px;">Smooth convergence. Loss steadily ghatti.</div>
+        </div>
+        <div class="node c-special" style="padding:7px 8px;">
+          <div class="node-title" style="font-size:10px;">⚠️ Too Large</div>
+          <div class="node-sub" style="font-size:9px;">Overshoot. Oscillate. Diverge.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="arr-down">↓</div>
+
+  <!-- ══ DECISION 6: CONVERGED ══ -->
+  <div class="diamond-wrap">
+    <div class="diamond">
+      Training complete hua?
+      <div class="diamond-q">Loss ≈ 0? · Max epochs? · Overfitting?</div>
+    </div>
+  </div>
+
+  <div class="branch-row">
+    <div class="branch">
+      <div class="branch-label no">✗ Nahi — Continue</div>
+      <div class="arr-small">↓</div>
+      <div class="node c-fwd" style="width:100%;">
+        <div class="node-title">Next Batch — Repeat</div>
+        <div class="node-sub">Agli 32-128 images lo (mini-batch). Forward pass se dobara shuru.</div>
+        <div class="node-math">→ Loop back to Forward Pass ↑</div>
+      </div>
+    </div>
+    <div class="branch">
+      <div class="branch-label yes">✓ Haan — Stop</div>
+      <div class="arr-small">↓</div>
+      <div class="node c-done" style="width:100%;">
+        <div class="node-title">🏁 Weights Lock — Training Done</div>
+        <div class="node-sub">Ab AI inference ke liye ready hai. Weights freeze. Koi aur update nahi.</div>
+      </div>
+    </div>
+    <div class="branch">
+      <div class="branch-label case">⚠️ Overfitting</div>
+      <div class="arr-small">↓</div>
+      <div class="node c-special" style="width:100%;">
+        <div class="node-title">⚠️ Early Stop</div>
+        <div class="node-sub">Training loss ↓ lekin validation loss ↑. Memorize kar raha — samajh nahi. Ruk jao. Fix: Dropout.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arr-down" style="margin-top:8px;">↓</div>
+
+  <!-- ══ FINAL SUMMARY ══ -->
+  <div class="summary">
+    <div class="summary-title">🔗 Poora Flow — Ek Jagah · Sequence Mein</div>
+
+    <div class="summary-row">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>Input aaya</strong> → Type dekho → Numbers mein convert karo (tensor/vector/matrix) · <em>Linear Algebra</em></div>
+    </div>
+    <div class="summary-row">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>Forward Pass</strong> → Har layer mein X·W+b → Simple patterns → Complex patterns → Raw scores · <em>Matrix Multiplication · Always</em></div>
+    </div>
+    <div class="summary-row">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>Softmax</strong> → Raw scores → e^x → divide by total → Proper probabilities · <em>Probability Theory · Always</em></div>
+    </div>
+    <div class="summary-row">
+      <div class="step-num">4</div>
+      <div class="step-text"><strong>Confidence check</strong> → High? Answer do. Low? "Not sure" bolo · <em>Special case decision</em></div>
+    </div>
+    <div class="summary-row" style="background:#0f1a0f;border-radius:6px;padding:8px 10px;margin-bottom:6px;">
+      <div class="step-num" style="background:#333;">↓</div>
+      <div class="step-text" style="color:#555;"><strong>Inference?</strong> → Yahan ruk jao. Steps 5-8 bypass. Weights locked. Done. ✓</div>
+    </div>
+    <div class="summary-row">
+      <div class="step-num">5</div>
+      <div class="step-text"><strong>Loss calculate</strong> → Answer key (one-hot) se compare → -log(correct prob) · <em>Cross-Entropy · Training only</em></div>
+    </div>
+    <div class="summary-row">
+      <div class="step-num">6</div>
+      <div class="step-text"><strong>Backward Pass</strong> → Chain Rule → dL/dW nikalo → Output layer se Input layer tak · <em>Backpropagation · Training only</em></div>
+    </div>
+    <div class="summary-row">
+      <div class="step-num">7</div>
+      <div class="step-text"><strong>Weights Update</strong> → w = w - α·gradient → Har weight thoda move karo · <em>Gradient Descent · Training only</em></div>
+    </div>
+    <div class="summary-row">
+      <div class="step-num">8</div>
+      <div class="step-text"><strong>Converged?</strong> → Nahi → Next batch → Step 2 se repeat. Haan → Weights lock → Inference ready ✓ · <em>Training Loop</em></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

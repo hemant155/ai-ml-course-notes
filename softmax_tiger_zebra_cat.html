@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<body style="margin:0;padding:14px 16px;">
+
+<div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px;">Raw scores (logits) adjust karo — dekho probabilities kaise change hoti hain:</div>
+
+<div style="display:grid;gap:10px;margin-bottom:16px;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span style="font-size:13px;font-weight:500;color:#EF9F27;min-width:60px;">🐯 Tiger</span>
+    <input type="range" id="s0" min="-30" max="30" value="21" style="flex:1;">
+    <span id="v0" style="font-size:13px;font-weight:500;min-width:36px;text-align:right;color:var(--color-text-primary);"></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span style="font-size:13px;font-weight:500;color:#7F77DD;min-width:60px;">🦓 Zebra</span>
+    <input type="range" id="s1" min="-30" max="30" value="-5" style="flex:1;">
+    <span id="v1" style="font-size:13px;font-weight:500;min-width:36px;text-align:right;color:var(--color-text-primary);"></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span style="font-size:13px;font-weight:500;color:#1D9E75;min-width:60px;">🐱 Cat</span>
+    <input type="range" id="s2" min="-30" max="30" value="3" style="flex:1;">
+    <span id="v2" style="font-size:13px;font-weight:500;min-width:36px;text-align:right;color:var(--color-text-primary);"></span>
+  </div>
+</div>
+
+<canvas id="cv" style="width:100%;display:block;border-radius:8px;margin-bottom:12px;" height="160"></canvas>
+
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
+  <div style="background:var(--color-background-secondary);border-radius:8px;padding:10px 12px;text-align:center;">
+    <div style="font-size:11px;color:var(--color-text-secondary);">🐯 Tiger prob</div>
+    <div id="p0" style="font-size:18px;font-weight:500;margin-top:4px;color:#EF9F27;"></div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:8px;padding:10px 12px;text-align:center;">
+    <div style="font-size:11px;color:var(--color-text-secondary);">🦓 Zebra prob</div>
+    <div id="p1" style="font-size:18px;font-weight:500;margin-top:4px;color:#7F77DD;"></div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:8px;padding:10px 12px;text-align:center;">
+    <div style="font-size:11px;color:var(--color-text-secondary);">🐱 Cat prob</div>
+    <div id="p2" style="font-size:18px;font-weight:500;margin-top:4px;color:#1D9E75;"></div>
+  </div>
+</div>
+
+<div id="loss-box" style="padding:12px 16px;border-radius:8px;margin-bottom:10px;background:var(--color-background-secondary);">
+  <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px;">True label = Tiger. Cross-Entropy Loss = -log(Tiger probability)</div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div id="loss-val" style="font-size:20px;font-weight:500;"></div>
+    <div id="loss-bar" style="flex:1;height:8px;border-radius:4px;background:var(--color-border-tertiary);overflow:hidden;">
+      <div id="loss-fill" style="height:100%;border-radius:4px;transition:width 0.2s;"></div>
+    </div>
+  </div>
+</div>
+
+<div id="verdict" style="padding:10px 14px;border-radius:8px;font-size:13px;font-weight:500;text-align:center;"></div>
+
+<script>
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+const sliders=[document.getElementById('s0'),document.getElementById('s1'),document.getElementById('s2')];
+const vEls=[document.getElementById('v0'),document.getElementById('v1'),document.getElementById('v2')];
+const pEls=[document.getElementById('p0'),document.getElementById('p1'),document.getElementById('p2')];
+const labels=['Tiger','Zebra','Cat'];
+const colors=['#EF9F27','#7F77DD','#1D9E75'];
+const emojis=['🐯','🦓','🐱'];
+
+function resize(){
+  cv.width=cv.offsetWidth*devicePixelRatio;
+  cv.height=160*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  draw();
+}
+
+function softmax(scores){
+  const maxS=Math.max(...scores);
+  const exps=scores.map(s=>Math.exp(s-maxS));
+  const sum=exps.reduce((a,b)=>a+b,0);
+  return exps.map(e=>e/sum);
+}
+
+function draw(){
+  const W=cv.offsetWidth,H=160;
+  const dark=matchMedia('(prefers-color-scheme:dark)').matches;
+  ctx.clearRect(0,0,W,H);
+  const textCol=dark?'#c2c0b6':'#3d3d3a';
+
+  const scores=sliders.map(s=>parseFloat(s.value)/10);
+  const probs=softmax(scores);
+
+  // Update score labels
+  scores.forEach((s,i)=>{ vEls[i].textContent=s.toFixed(1); });
+
+  // Draw bars
+  const barW=(W-60)/3;
+  const maxBarH=H-50;
+
+  probs.forEach((p,i)=>{
+    const bx=20+i*(barW+10);
+    const bh=p*maxBarH;
+    const by=H-35-bh;
+
+    // Bar
+    ctx.fillStyle=colors[i]+(i===0?'':'99');
+    ctx.beginPath();
+    const r=6;
+    ctx.moveTo(bx+r,by); ctx.lineTo(bx+barW-r,by);
+    ctx.quadraticCurveTo(bx+barW,by,bx+barW,by+r);
+    ctx.lineTo(bx+barW,H-35); ctx.lineTo(bx,H-35);
+    ctx.lineTo(bx,by+r);
+    ctx.quadraticCurveTo(bx,by,bx+r,by);
+    ctx.fill();
+
+    // Percentage label
+    ctx.fillStyle=textCol; ctx.font='13px sans-serif'; ctx.textAlign='center';
+    ctx.fillText((p*100).toFixed(1)+'%',bx+barW/2,by-6);
+
+    // Emoji label
+    ctx.font='14px sans-serif';
+    ctx.fillText(emojis[i],bx+barW/2-7,H-12);
+  });
+
+  // Update prob cards
+  probs.forEach((p,i)=>{
+    pEls[i].textContent=(p*100).toFixed(1)+'%';
+  });
+
+  // Loss calculation (true = Tiger = index 0)
+  const loss=-Math.log(Math.max(probs[0],1e-10));
+  const lossEl=document.getElementById('loss-val');
+  const fillEl=document.getElementById('loss-fill');
+  const verdictEl=document.getElementById('verdict');
+
+  lossEl.textContent='Loss = '+loss.toFixed(3);
+  const fillPct=Math.min(loss/5*100,100);
+
+  let lossColor, verdict;
+  if(loss<0.3){
+    lossColor='#1D9E75'; verdict='Model is confident Tiger hai ✓ — Loss bahut chhota. Weights barely change karenge.';
+    verdictEl.style.background='var(--color-background-success)'; verdictEl.style.color='var(--color-text-success)';
+  } else if(loss<1.5){
+    lossColor='#EF9F27'; verdict='Model uncertain hai — Loss medium. Weights adjust honge.';
+    verdictEl.style.background='var(--color-background-warning)'; verdictEl.style.color='var(--color-text-warning)';
+  } else {
+    lossColor='#D85A30'; verdict='Model ne Zebra ya Cat choose kiya — Loss bada! Weights bahut zyada correct honge.';
+    verdictEl.style.background='var(--color-background-danger)'; verdictEl.style.color='var(--color-text-danger)';
+  }
+  lossEl.style.color=lossColor;
+  fillEl.style.width=fillPct+'%';
+  fillEl.style.background=lossColor;
+  verdictEl.textContent=verdict;
+}
+
+sliders.forEach(s=>s.addEventListener('input',draw));
+window.addEventListener('resize',resize);
+resize();
+</script>
+</body>

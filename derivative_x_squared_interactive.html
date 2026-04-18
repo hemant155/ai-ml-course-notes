@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+<body style="margin:0;padding:12px 16px;">
+
+<div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+  <div style="flex:1;min-width:140px;background:var(--color-background-secondary);border-radius:8px;padding:10px 14px;">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:2px;">Function</div>
+    <div style="font-size:15px;font-weight:500;color:var(--color-text-primary);">f(x) = x²</div>
+  </div>
+  <div style="flex:1;min-width:140px;background:var(--color-background-secondary);border-radius:8px;padding:10px 14px;">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:2px;">Derivative formula</div>
+    <div style="font-size:15px;font-weight:500;color:var(--color-text-primary);">f'(x) = 2x</div>
+  </div>
+  <div id="card-slope" style="flex:1;min-width:140px;background:var(--color-background-secondary);border-radius:8px;padding:10px 14px;">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:2px;">Slope at current x</div>
+    <div id="slope-val" style="font-size:15px;font-weight:500;">—</div>
+  </div>
+  <div id="card-ai" style="flex:1;min-width:140px;background:var(--color-background-secondary);border-radius:8px;padding:10px 14px;">
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:2px;">AI instruction</div>
+    <div id="ai-val" style="font-size:13px;font-weight:500;">—</div>
+  </div>
+</div>
+
+<canvas id="cv" style="width:100%;display:block;border-radius:8px;" height="260"></canvas>
+
+<div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+  <span style="font-size:13px;color:var(--color-text-secondary);white-space:nowrap;">x =</span>
+  <input type="range" id="sl" min="-40" max="40" value="15" style="flex:1;">
+  <span id="xval" style="font-size:13px;font-weight:500;min-width:30px;color:var(--color-text-primary);"></span>
+</div>
+
+<div id="msg" style="margin-top:10px;font-size:12px;color:var(--color-text-secondary);text-align:center;min-height:18px;"></div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const sl = document.getElementById('sl');
+
+function resize() {
+  cv.width = cv.offsetWidth * devicePixelRatio;
+  cv.height = 260 * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  draw(parseFloat(sl.value)/10);
+}
+
+const W = () => cv.offsetWidth;
+const H = 260;
+
+function f(x){ return x*x; }
+function df(x){ return 2*x; }
+
+function toC(x,y){ return [W()/2 + x*22, H/2+10 - y*3.5]; }
+
+function draw(px){
+  const w = W(), dark = matchMedia('(prefers-color-scheme:dark)').matches;
+  ctx.clearRect(0,0,w,H);
+
+  const textCol = dark ? '#c2c0b6':'#3d3d3a';
+  const axisCol = dark ? '#444':'#ddd';
+  const gridCol  = dark ? '#2a2a2a':'#f0f0f0';
+
+  // Grid
+  ctx.strokeStyle = gridCol; ctx.lineWidth=0.5;
+  for(let gx=-9;gx<=9;gx++){
+    const [cx]=toC(gx,0); ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
+  }
+  // Axes
+  ctx.strokeStyle=axisCol; ctx.lineWidth=1;
+  const [ax1]=toC(-10,0),[ax2]=toC(10,0);
+  ctx.beginPath();ctx.moveTo(ax1,H/2+10);ctx.lineTo(ax2,H/2+10);ctx.stroke();
+  const [ay1,ay2]=[toC(0,30)[0],toC(0,-5)[0]];
+  ctx.beginPath();ctx.moveTo(w/2,8);ctx.lineTo(w/2,H-8);ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle=textCol; ctx.font='11px sans-serif';
+  ctx.fillText('f(x)',w/2+4,16);
+  ctx.fillText('x',w-18,H/2+6);
+
+  // Curve
+  ctx.strokeStyle='#7F77DD'; ctx.lineWidth=2.5;
+  ctx.beginPath();
+  let first=true;
+  for(let x=-9;x<=9;x+=0.08){
+    const [cx,cy]=toC(x,f(x));
+    if(cy<0||cy>H){first=true;continue;}
+    if(first){ctx.moveTo(cx,cy);first=false;}else ctx.lineTo(cx,cy);
+  }
+  ctx.stroke();
+
+  // Tangent line
+  const slope=df(px);
+  const py=f(px);
+  const x1=px-3, x2=px+3;
+  const [tc1x,tc1y]=toC(x1, py+slope*(x1-px));
+  const [tc2x,tc2y]=toC(x2, py+slope*(x2-px));
+
+  let col;
+  if(Math.abs(slope)<0.3) col='#1D9E75';
+  else if(slope>0) col='#EF9F27';
+  else col='#D85A30';
+
+  ctx.strokeStyle=col; ctx.lineWidth=2; ctx.setLineDash([6,4]);
+  ctx.beginPath();ctx.moveTo(tc1x,tc1y);ctx.lineTo(tc2x,tc2y);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Point
+  const [pcx,pcy]=toC(px,py);
+  ctx.fillStyle=col;
+  ctx.beginPath();ctx.arc(pcx,pcy,7,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=dark?'#111':'#fff'; ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(pcx,pcy,7,0,Math.PI*2);ctx.stroke();
+
+  // Coord label
+  ctx.fillStyle=textCol; ctx.font='11px sans-serif';
+  const lx = pcx > w-120 ? pcx-130 : pcx+12;
+  ctx.fillText(`(${px.toFixed(1)}, ${py.toFixed(1)})`, lx, pcy-10);
+
+  // Update cards
+  document.getElementById('xval').textContent = px.toFixed(1);
+  document.getElementById('slope-val').style.color = col;
+  document.getElementById('slope-val').textContent = `f'(${px.toFixed(1)}) = ${slope.toFixed(2)}`;
+
+  let aiMsg, hint;
+  if(Math.abs(slope)<0.3){
+    aiMsg='Loss minimum hai — ruko!';
+    hint='Derivative = 0 → gradient descent ruk jaata hai. Yahi minimum hai.';
+    document.getElementById('card-ai').style.background='var(--color-background-success)';
+  } else if(slope>0){
+    aiMsg='Weight ko kam karo ←';
+    hint='Positive slope → loss badhega agar weight badhaya. Toh weight ghataao.';
+    document.getElementById('card-ai').style.background='var(--color-background-warning)';
+  } else {
+    aiMsg='Weight ko badhaao →';
+    hint='Negative slope → loss ghategaa agar weight badhaya. Toh weight badhaao.';
+    document.getElementById('card-ai').style.background='var(--color-background-warning)';
+  }
+  document.getElementById('ai-val').textContent = aiMsg;
+  document.getElementById('msg').textContent = hint;
+}
+
+sl.addEventListener('input', ()=>draw(parseFloat(sl.value)/10));
+window.addEventListener('resize', resize);
+resize();
+</script>
+</body>

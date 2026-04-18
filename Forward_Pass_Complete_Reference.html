@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Forward Pass — Complete Reference</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: Arial, sans-serif;
+  background: #0d1117;
+  color: #e6edf3;
+  padding: 28px 20px 80px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+h1 { font-size:20px; font-weight:600; color:#fff; margin-bottom:4px; text-align:center; }
+.sub { font-size:12px; color:#555; text-align:center; margin-bottom:28px; }
+
+.section { margin-bottom:36px; }
+.sec-title {
+  font-size:14px; font-weight:700; color:#c4b5fd;
+  border-left:3px solid #7c5af0;
+  padding-left:12px; margin-bottom:14px;
+}
+
+/* MASTER FLOW */
+.flow { display:flex; flex-direction:column; gap:0; }
+.flow-node {
+  border-radius:10px; padding:13px 18px;
+  position:relative; margin-bottom:3px;
+}
+.flow-title { font-size:13px; font-weight:700; margin-bottom:4px; }
+.flow-sub   { font-size:12px; color:#aaa; line-height:1.7; }
+.flow-tools {
+  margin-top:8px; padding:8px 12px;
+  background:rgba(0,0,0,0.3);
+  border-radius:6px; font-size:11px;
+  line-height:1.9;
+}
+.arr { text-align:center; color:#333; font-size:18px; margin:2px 0; }
+
+/* TOOL TABLE */
+table { width:100%; border-collapse:collapse; }
+th {
+  background:#161b22; color:#888;
+  font-size:11px; font-weight:600;
+  padding:10px 12px; text-align:left;
+  border-bottom:1px solid #222;
+}
+td {
+  font-size:12px; padding:10px 12px;
+  border-bottom:1px solid #161b22;
+  color:#ccc; vertical-align:top;
+  line-height:1.7;
+}
+tr:hover td { background:#0d1117; }
+
+.badge {
+  font-size:10px; font-weight:700;
+  padding:2px 7px; border-radius:8px;
+  display:inline-block; white-space:nowrap;
+}
+.b-always  { background:#1e3a5f; color:#7eb8f7; }
+.b-special { background:#1a1200; color:#fbbf24; }
+.b-bypass  { background:#111; color:#444; }
+.b-task    { background:#1a0a1f; color:#c4b5fd; }
+
+.mono {
+  font-family:monospace; font-size:11px;
+  background:rgba(0,0,0,0.4);
+  padding:2px 7px; border-radius:3px;
+  color:#7eb8f7; display:inline;
+}
+
+.card {
+  border-radius:10px; padding:14px 18px;
+  margin-bottom:10px; border:1px solid #222;
+}
+.card-title { font-size:13px; font-weight:700; margin-bottom:6px; }
+.card-body  { font-size:12px; line-height:1.8; color:#aaa; }
+
+.analogy {
+  border-left:3px solid #fbbf24; background:#1a1200;
+  border-radius:0 8px 8px 0;
+  padding:10px 14px; margin-bottom:12px;
+  font-size:12px; color:#fde68a; line-height:1.7;
+}
+
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+.practice-tag {
+  display:inline-block;
+  font-size:10px; font-weight:700;
+  padding:2px 8px; border-radius:10px;
+  background:#0a2010; color:#4ade80;
+  border:1px solid #166534;
+  margin-left:6px;
+}
+</style>
+</head>
+<body>
+
+<h1>⏩ Forward Pass — Complete Reference</h1>
+<div class="sub">Kya kya hota hai · Kaunse tools · Kab use · Special cases</div>
+
+<!-- SECTION 1: MASTER ANSWER -->
+<div class="section">
+<div class="sec-title">1. Tera Sawaal — Direct Answer</div>
+
+<div class="analogy">
+  ✅ <strong>Haan — Input → Numbers ke baad HAMESHA Forward Pass hota hai.</strong><br>
+  Koi exception nahi. Chahe image ho, text ho, numbers ho — convert ke baad seedha forward pass.<br><br>
+  Forward Pass ek single step nahi hai — yeh ek <strong>container</strong> hai jiske andar multiple operations hote hain. Har operation ek "tool" hai.
+</div>
+
+<div class="card" style="background:#0a1525;border-color:#1d4a7a;">
+  <div class="card-title" style="color:#7eb8f7;">Forward Pass = Container</div>
+  <div class="card-body">
+    Jaise "cooking" ek container hai jiske andar: chop karna, boil karna, fry karna, season karna hota hai — alag alag tools.<br><br>
+    Forward Pass ke andar: Matrix Multiply, Activation, Normalization, Attention, Dropout, Softmax — yeh sab tools hain. Kaunse tools use honge — task pe depend karta hai.
+  </div>
+</div>
+</div>
+
+<!-- SECTION 2: ALWAYS STEPS -->
+<div class="section">
+<div class="sec-title">2. Forward Pass — Hamesha Hone Wale Steps</div>
+
+<div class="flow">
+
+  <div class="flow-node" style="background:#0f0a2e;border:1px solid #4c3a8c;">
+    <div class="flow-title" style="color:#c4b5fd;">
+      Pre-Step — Input → Numbers
+      <span class="badge b-always">Before Forward Pass</span>
+    </div>
+    <div class="flow-sub">Yeh forward pass ka hissa nahi — prerequisite hai. Bina iske forward pass possible nahi.</div>
+    <div class="flow-tools" style="color:#c4b5fd;">
+      Image: pixels → tensor (H×W×C)<br>
+      Text: words → IDs → embedding vectors<br>
+      Numbers: normalize → vector [0-1 range]
+    </div>
+  </div>
+
+  <div class="arr">↓ Forward Pass Shuru</div>
+
+  <div class="flow-node" style="background:#0a1f1a;border:2px solid #166534;">
+    <div class="flow-title" style="color:#6ee7b7;">
+      Step A — Linear Transformation (Har Layer Mein)
+      <span class="badge b-always">Always · Every Layer</span>
+    </div>
+    <div class="flow-sub">
+      Yeh sabse core operation hai. Koi bhi network ho — yeh hamesha hoga. Har layer mein ek baar.
+    </div>
+    <div class="flow-tools" style="color:#4ade80;">
+      Formula: <span class="mono">Z = X · W + b</span><br>
+      X = input (numbers ki matrix)<br>
+      W = weight matrix (trained values)<br>
+      b = bias vector<br>
+      · = matrix multiplication — inner dims match karni chahiye
+    </div>
+  </div>
+
+  <div class="arr">↓</div>
+
+  <div class="flow-node" style="background:#1a1000;border:2px solid #854d0e;">
+    <div class="flow-title" style="color:#fde68a;">
+      Step B — Activation Function (Har Hidden Layer Mein)
+      <span class="badge b-always">Always · Hidden Layers</span>
+    </div>
+    <div class="flow-sub">
+      Linear transformation ke baad non-linearity add karo. Bina activation — sab layers ek hi layer ke barabar hain. Yeh AI ko complex patterns seekhne deta hai.
+    </div>
+    <div class="flow-tools" style="color:#fde68a;">
+      Common options:<br>
+      ReLU:    <span class="mono">max(0, z)</span> — negative → 0, positive → same. Most common.<br>
+      Sigmoid: <span class="mono">1/(1+e⁻ᶻ)</span> — output 0 to 1. Binary classification.<br>
+      Tanh:    <span class="mono">(eᶻ-e⁻ᶻ)/(eᶻ+e⁻ᶻ)</span> — output -1 to 1. RNNs mein.<br>
+      GELU:    Smooth ReLU. Transformers mein.
+    </div>
+  </div>
+
+  <div class="arr">↓</div>
+
+  <div class="flow-node" style="background:#0a2020;border:2px solid #0e7490;">
+    <div class="flow-title" style="color:#67e8f9;">
+      Step C — Output Layer (Last Layer Only)
+      <span class="badge b-always">Always · Last Layer</span>
+    </div>
+    <div class="flow-sub">
+      Last layer mein activation alag hoti hai — task pe depend karti hai.
+    </div>
+    <div class="flow-tools" style="color:#67e8f9;">
+      Classification: Softmax → probabilities (sum=1)<br>
+      Binary: Sigmoid → 0 or 1 probability<br>
+      Regression: None → raw number (price prediction)<br>
+      Multi-label: Sigmoid per class → multiple 1s possible
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- SECTION 3: TOOLS TABLE — ALWAYS -->
+<div class="section">
+<div class="sec-title">3. Tools — Hamesha Use Hone Wale</div>
+
+<table>
+  <tr>
+    <th>Tool</th>
+    <th>Formula</th>
+    <th>Kya Karta Hai</th>
+    <th>Kab</th>
+    <th>Practice</th>
+  </tr>
+  <tr>
+    <td style="color:#6ee7b7;font-weight:600;">Matrix Multiply</td>
+    <td><span class="mono">X · W</span></td>
+    <td>Input ko transform karo. Har neuron ka output nikalo ek saath.</td>
+    <td><span class="badge b-always">Har layer</span></td>
+    <td><span class="practice-tag">✓ Practice</span></td>
+  </tr>
+  <tr style="background:#0a0f1a;">
+    <td style="color:#6ee7b7;font-weight:600;">Bias Add</td>
+    <td><span class="mono">Z + b</span></td>
+    <td>Offset add karo. Neuron zero input par bhi fire kar sake.</td>
+    <td><span class="badge b-always">Har layer</span></td>
+    <td><span class="practice-tag">✓ Practice</span></td>
+  </tr>
+  <tr>
+    <td style="color:#fde68a;font-weight:600;">ReLU</td>
+    <td><span class="mono">max(0,z)</span></td>
+    <td>Negative values zero kar do. Non-linearity add karo.</td>
+    <td><span class="badge b-always">Hidden layers</span></td>
+    <td><span class="practice-tag">✓ Practice</span></td>
+  </tr>
+  <tr style="background:#0a0f1a;">
+    <td style="color:#fde68a;font-weight:600;">Softmax</td>
+    <td><span class="mono">e^z/Σe^z</span></td>
+    <td>Raw scores → probabilities. Sum = 1 hamesha.</td>
+    <td><span class="badge b-always">Last layer (classification)</span></td>
+    <td><span class="practice-tag">✓ Practice</span></td>
+  </tr>
+  <tr>
+    <td style="color:#c4b5fd;font-weight:600;">Dot Product</td>
+    <td><span class="mono">Σ(aᵢ×bᵢ)</span></td>
+    <td>Do vectors ka similarity score. Har neuron andar se yahi karta hai.</td>
+    <td><span class="badge b-always">Every multiply</span></td>
+    <td><span class="practice-tag">✓ Practice</span></td>
+  </tr>
+</table>
+</div>
+
+<!-- SECTION 4: SPECIAL CASE TOOLS -->
+<div class="section">
+<div class="sec-title">4. Special Case Tools — Task Pe Depend</div>
+
+<table>
+  <tr>
+    <th>Tool</th>
+    <th>Formula</th>
+    <th>Kya Karta Hai</th>
+    <th>Kab Use</th>
+    <th>Kab Bypass</th>
+  </tr>
+  <tr>
+    <td style="color:#fbbf24;font-weight:600;">Cosine Similarity</td>
+    <td><span class="mono">(a·b)/(|a||b|)</span></td>
+    <td>Size-independent similarity. Direction compare karo.</td>
+    <td><span class="badge b-special">Text sim, Recommend, Search</span></td>
+    <td>Image classification mein bypass</td>
+  </tr>
+  <tr style="background:#0a0f1a;">
+    <td style="color:#fbbf24;font-weight:600;">Attention (Q·K)</td>
+    <td><span class="mono">Q·Kᵀ/√d</span></td>
+    <td>Har word ka har word se relation. "it" = cat.</td>
+    <td><span class="badge b-special">Transformers only</span></td>
+    <td>Simple MLPs, CNNs mein nahi</td>
+  </tr>
+  <tr>
+    <td style="color:#fbbf24;font-weight:600;">Batch Norm</td>
+    <td><span class="mono">(x-μ)/σ</span></td>
+    <td>Layer output normalize karo. Training stable karo.</td>
+    <td><span class="badge b-special">Deep networks</span></td>
+    <td>Shallow networks mein skip</td>
+  </tr>
+  <tr style="background:#0a0f1a;">
+    <td style="color:#fbbf24;font-weight:600;">Dropout</td>
+    <td><span class="mono">p(keep)=0.8</span></td>
+    <td>Random neurons off karo. Overfitting rokta hai.</td>
+    <td><span class="badge b-special">Training mein only</span></td>
+    <td>Inference mein BYPASS — sab neurons on</td>
+  </tr>
+  <tr>
+    <td style="color:#fbbf24;font-weight:600;">Embedding Lookup</td>
+    <td><span class="mono">E[word_id]</span></td>
+    <td>Word ID → dense vector. Meaning capture.</td>
+    <td><span class="badge b-special">Text/NLP tasks</span></td>
+    <td>Image, tabular data mein nahi</td>
+  </tr>
+  <tr style="background:#0a0f1a;">
+    <td style="color:#fbbf24;font-weight:600;">Convolution</td>
+    <td><span class="mono">filter·patch</span></td>
+    <td>Image pe sliding window. Local patterns dhundho.</td>
+    <td><span class="badge b-special">Images (CNNs)</span></td>
+    <td>Text, tabular mein nahi</td>
+  </tr>
+  <tr>
+    <td style="color:#fbbf24;font-weight:600;">Pooling</td>
+    <td><span class="mono">max/avg</span></td>
+    <td>Feature map compress karo. Important values rakh.</td>
+    <td><span class="badge b-special">CNNs only</span></td>
+    <td>MLPs, Transformers mein nahi</td>
+  </tr>
+  <tr style="background:#0a0f1a;">
+    <td style="color:#fbbf24;font-weight:600;">Sigmoid</td>
+    <td><span class="mono">1/(1+e⁻ᶻ)</span></td>
+    <td>Output 0-1. Binary yes/no probability.</td>
+    <td><span class="badge b-special">Binary classification</span></td>
+    <td>Multi-class mein Softmax use</td>
+  </tr>
+  <tr>
+    <td style="color:#fbbf24;font-weight:600;">Layer Norm</td>
+    <td><span class="mono">(x-μ)/σ</span></td>
+    <td>Per-sample normalize. Transformers prefer this.</td>
+    <td><span class="badge b-special">Transformers</span></td>
+    <td>CNNs Batch Norm prefer karte</td>
+  </tr>
+</table>
+</div>
+
+<!-- SECTION 5: BY TASK -->
+<div class="section">
+<div class="sec-title">5. Task Pe Kaunse Tools — Quick Reference</div>
+
+<table>
+  <tr>
+    <th>Task</th>
+    <th>Hamesha</th>
+    <th>Special Tools</th>
+    <th>Bypass</th>
+  </tr>
+  <tr>
+    <td style="color:#ccc;font-weight:600;">Image (Cat/Dog)</td>
+    <td>MatMul, ReLU, Softmax</td>
+    <td>Convolution, Pooling</td>
+    <td>Cosine Sim, Attention, Embedding</td>
+  </tr>
+  <tr style="background:#0a0f1a;">
+    <td style="color:#ccc;font-weight:600;">Text Similarity</td>
+    <td>MatMul, ReLU</td>
+    <td>Embedding, Cosine Similarity</td>
+    <td>Softmax (no classification), Convolution</td>
+  </tr>
+  <tr>
+    <td style="color:#ccc;font-weight:600;">ChatGPT (Transformer)</td>
+    <td>MatMul, Softmax</td>
+    <td>Embedding, Attention (Q·K), Layer Norm, GELU</td>
+    <td>Convolution, Pooling</td>
+  </tr>
+  <tr style="background:#0a0f1a;">
+    <td style="color:#ccc;font-weight:600;">Price Prediction</td>
+    <td>MatMul, ReLU</td>
+    <td>Batch Norm</td>
+    <td>Softmax (regression), Cosine Sim, Attention</td>
+  </tr>
+  <tr>
+    <td style="color:#ccc;font-weight:600;">Recommendation</td>
+    <td>MatMul, ReLU</td>
+    <td>Embedding, Cosine Similarity, Dot Product</td>
+    <td>Convolution, Softmax</td>
+  </tr>
+</table>
+</div>
+
+<!-- SECTION 6: PRACTICE LIST -->
+<div class="section">
+<div class="sec-title">6. Practice List — Alag Alag Practice Karo</div>
+
+<div class="analogy">
+  🎯 <strong>Strategy:</strong> Pehle "Always" wale tools practice karo — yeh har jagah kaam aate hain. Phir special tools ek ek task ke context mein.
+</div>
+
+<div class="grid2">
+  <div class="card" style="background:#0a1525;border-color:#1d4a7a;">
+    <div class="card-title" style="color:#7eb8f7;">🔵 Level 1 — Hamesha Chahiye (Practice First)</div>
+    <div class="card-body">
+      <strong style="color:#fff;">1. Matrix Multiplication</strong><br>
+      (m×n)·(n×p) = (m×p) manually karo<br><br>
+      <strong style="color:#fff;">2. Dot Product</strong><br>
+      a·b = Σ(aᵢ×bᵢ) — vectors manually<br><br>
+      <strong style="color:#fff;">3. ReLU</strong><br>
+      max(0,z) — negative values zero karo<br><br>
+      <strong style="color:#fff;">4. Softmax</strong><br>
+      e^z / Σe^z — manually calculate karo<br><br>
+      <strong style="color:#fff;">5. Forward Pass (full)</strong><br>
+      Input → MatMul → ReLU → MatMul → Softmax
+    </div>
+  </div>
+
+  <div class="card" style="background:#1a1200;border-color:#7c5a00;">
+    <div class="card-title" style="color:#fde68a;">🟡 Level 2 — Task-Specific (Practice Next)</div>
+    <div class="card-body">
+      <strong style="color:#fff;">6. Cosine Similarity</strong><br>
+      (a·b)/(|a|×|b|) — word vectors pe<br><br>
+      <strong style="color:#fff;">7. Sigmoid</strong><br>
+      1/(1+e⁻ᶻ) — binary output<br><br>
+      <strong style="color:#fff;">8. Embedding Lookup</strong><br>
+      Word → ID → Vector<br><br>
+      <strong style="color:#fff;">9. Attention Score</strong><br>
+      Q·Kᵀ/√d — transformer style<br><br>
+      <strong style="color:#fff;">10. Batch Normalization</strong><br>
+      (x-μ)/σ — normalize layer output
+    </div>
+  </div>
+</div>
+
+<div class="card" style="background:#111;border-color:#333;margin-top:10px;">
+  <div class="card-title" style="color:#fff;">📌 Key Insight — Yaad Rakho</div>
+  <div class="card-body">
+    Forward Pass = Container.<br>
+    MatMul + Activation = Core (hamesha).<br>
+    Baki tools = plugins (task pe lagao).<br><br>
+    Cosine Similarity ek plugin hai — image classification mein nahi lagta, text similarity mein lagta hai.<br>
+    Dropout ek plugin hai — training mein lagta hai, inference mein nahi.<br>
+    Attention ek plugin hai — transformer mein lagta hai, simple MLP mein nahi.
+  </div>
+</div>
+</div>
+
+</body>
+</html>

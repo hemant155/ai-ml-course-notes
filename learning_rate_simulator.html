@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<body style="margin:0;padding:14px 16px;">
+
+<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+  <button onclick="setLR(0.02)" id="btn-slow" style="flex:1;min-width:80px;padding:8px;border-radius:8px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);cursor:pointer;font-size:12px;font-weight:500;color:var(--color-text-primary);">🐢 Too Small (0.02)</button>
+  <button onclick="setLR(0.15)" id="btn-good" style="flex:1;min-width:80px;padding:8px;border-radius:8px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);cursor:pointer;font-size:12px;font-weight:500;color:var(--color-text-primary);">✓ Just Right (0.15)</button>
+  <button onclick="setLR(0.9)" id="btn-big" style="flex:1;min-width:80px;padding:8px;border-radius:8px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);cursor:pointer;font-size:12px;font-weight:500;color:var(--color-text-primary);">💥 Too Large (0.90)</button>
+</div>
+
+<canvas id="cv" style="width:100%;display:block;border-radius:8px;" height="220"></canvas>
+
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;">
+  <div style="background:var(--color-background-secondary);border-radius:8px;padding:10px 12px;text-align:center;">
+    <div style="font-size:11px;color:var(--color-text-secondary);">Learning Rate α</div>
+    <div id="v-lr" style="font-size:16px;font-weight:500;margin-top:4px;"></div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:8px;padding:10px 12px;text-align:center;">
+    <div style="font-size:11px;color:var(--color-text-secondary);">Steps to converge</div>
+    <div id="v-steps" style="font-size:16px;font-weight:500;margin-top:4px;"></div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:8px;padding:10px 12px;text-align:center;">
+    <div style="font-size:11px;color:var(--color-text-secondary);">Status</div>
+    <div id="v-status" style="font-size:13px;font-weight:500;margin-top:4px;"></div>
+  </div>
+</div>
+
+<div id="msg" style="margin-top:10px;padding:10px 14px;border-radius:8px;font-size:12px;text-align:center;"></div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let currentLR = 0.15;
+
+function f(w){ return w*w; }
+function df(w){ return 2*w; }
+
+function simulate(lr, steps=40){
+  let w = 3.0;
+  const path = [{w, l:f(w)}];
+  for(let i=0;i<steps;i++){
+    w = w - lr * df(w);
+    path.push({w, l:f(w)});
+    if(Math.abs(w) > 8) break;
+  }
+  return path;
+}
+
+function resize(){
+  cv.width = cv.offsetWidth * devicePixelRatio;
+  cv.height = 220 * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  draw(currentLR);
+}
+
+function draw(lr){
+  const W = cv.offsetWidth, H = 220;
+  const dark = matchMedia('(prefers-color-scheme:dark)').matches;
+  ctx.clearRect(0,0,W,H);
+
+  const textCol = dark?'#c2c0b6':'#3d3d3a';
+  const axisCol = dark?'#444':'#ddd';
+
+  // Axes
+  ctx.strokeStyle=axisCol; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(30,10); ctx.lineTo(30,H-30); ctx.lineTo(W-10,H-30); ctx.stroke();
+  ctx.fillStyle=textCol; ctx.font='11px sans-serif';
+  ctx.fillText('w',W-18,H-24);
+  ctx.fillText('Loss',34,18);
+
+  // f(w) = w² curve
+  function toC(w,l){
+    const cx = 30 + (w+4)/8*(W-44);
+    const cy = H-30 - Math.min(l/14,0.95)*(H-45);
+    return [cx,cy];
+  }
+
+  ctx.strokeStyle='#7F77DD'; ctx.lineWidth=2;
+  ctx.beginPath();
+  let first=true;
+  for(let w=-3.8;w<=3.8;w+=0.08){
+    const [cx,cy]=toC(w,f(w));
+    if(first){ctx.moveTo(cx,cy);first=false;}
+    else ctx.lineTo(cx,cy);
+  }
+  ctx.stroke();
+
+  // Minimum marker
+  const [mx,my]=toC(0,0);
+  ctx.strokeStyle='#1D9E75'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(mx,H-30); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#1D9E75'; ctx.font='10px sans-serif';
+  ctx.fillText('min',mx+3,H-16);
+
+  // Simulate path
+  const path = simulate(lr);
+  const converged = path.filter(p=>Math.abs(p.w)<0.05).length > 0;
+  const diverged = path.some(p=>Math.abs(p.w)>7);
+
+  let pathCol;
+  if(lr < 0.05) pathCol='#EF9F27';
+  else if(lr > 0.5) pathCol='#D85A30';
+  else pathCol='#1D9E75';
+
+  // Draw steps on curve
+  const showSteps = Math.min(path.length, 25);
+  for(let i=0;i<showSteps-1;i++){
+    const [x1,y1]=toC(path[i].w, path[i].l);
+    const [x2,y2]=toC(path[i+1].w, path[i+1].l);
+    const alpha = 1 - i/showSteps * 0.5;
+    ctx.strokeStyle=pathCol; ctx.lineWidth=1.5; ctx.globalAlpha=alpha;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+
+  // Dots
+  for(let i=0;i<Math.min(showSteps,path.length);i++){
+    const [px,py]=toC(path[i].w, path[i].l);
+    if(px<20||px>W-10||py<5||py>H-20) continue;
+    ctx.fillStyle=pathCol;
+    const r = i===0?6:3;
+    ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2); ctx.fill();
+  }
+
+  // Step numbers at start
+  const [sx,sy]=toC(path[0].w,path[0].l);
+  ctx.fillStyle=textCol; ctx.font='10px sans-serif';
+  ctx.fillText('start',sx+6,sy-6);
+
+  // Update cards
+  document.getElementById('v-lr').textContent = lr.toFixed(2);
+  const stepsToConv = converged ? path.findIndex(p=>Math.abs(p.w)<0.05) : '—';
+  document.getElementById('v-steps').textContent = stepsToConv;
+
+  const statusEl = document.getElementById('v-status');
+  const msgEl = document.getElementById('msg');
+
+  if(lr < 0.05){
+    statusEl.textContent='Too slow 🐢'; statusEl.style.color='#EF9F27';
+    msgEl.textContent='Alpha bahut chhota — kadam bahut chhotey. Model seekhega zaroor lekin bahut time lagega. Real AI mein impractical.';
+    msgEl.style.background='var(--color-background-warning)'; msgEl.style.color='var(--color-text-warning)';
+  } else if(lr > 0.5){
+    statusEl.textContent='Diverging 💥'; statusEl.style.color='#D85A30';
+    msgEl.textContent='Alpha bahut bada — kadam itne bade ki minimum ko overshoot kar gaya. Oopar neeche oscillate karta hai, kabhi settle nahi karta.';
+    msgEl.style.background='var(--color-background-danger)'; msgEl.style.color='var(--color-text-danger)';
+  } else {
+    statusEl.textContent='Converging ✓'; statusEl.style.color='#1D9E75';
+    msgEl.textContent=`Perfect balance — ${stepsToConv} steps mein minimum mil gaya. Yahi real AI mein hota hai.`;
+    msgEl.style.background='var(--color-background-success)'; msgEl.style.color='var(--color-text-success)';
+  }
+}
+
+function setLR(lr){
+  currentLR = lr;
+  ['slow','good','big'].forEach(t=>{
+    document.getElementById('btn-'+t).style.background='var(--color-background-secondary)';
+    document.getElementById('btn-'+t).style.borderColor='var(--color-border-secondary)';
+  });
+  const btn = lr<0.05?'slow':lr>0.5?'big':'good';
+  document.getElementById('btn-'+btn).style.background='var(--color-background-tertiary)';
+  draw(lr);
+}
+
+window.addEventListener('resize', resize);
+resize();
+setLR(0.15);
+</script>
+</body>

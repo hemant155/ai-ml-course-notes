@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<body style="margin:0;padding:14px 16px;">
+
+<div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px;">True label = Cat. Model ki confidence adjust karo:</div>
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+  <span style="font-size:13px;color:var(--color-text-secondary);min-width:120px;">Cat probability:</span>
+  <input type="range" id="sp" min="1" max="99" value="80" style="flex:1;">
+  <span id="vp" style="font-size:14px;font-weight:500;min-width:40px;text-align:right;"></span>
+</div>
+
+<canvas id="cv" style="width:100%;display:block;border-radius:8px;" height="180"></canvas>
+
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;">
+  <div style="background:var(--color-background-secondary);border-radius:8px;padding:10px 12px;text-align:center;">
+    <div style="font-size:11px;color:var(--color-text-secondary);">Cat prob</div>
+    <div id="c1" style="font-size:16px;font-weight:500;margin-top:4px;"></div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:8px;padding:10px 12px;text-align:center;">
+    <div style="font-size:11px;color:var(--color-text-secondary);">Cross-Entropy Loss</div>
+    <div id="c2" style="font-size:16px;font-weight:500;margin-top:4px;"></div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:8px;padding:10px 12px;text-align:center;">
+    <div style="font-size:11px;color:var(--color-text-secondary);">Verdict</div>
+    <div id="c3" style="font-size:13px;font-weight:500;margin-top:4px;"></div>
+  </div>
+</div>
+
+<script>
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+const sp=document.getElementById('sp');
+
+function resize(){
+  cv.width=cv.offsetWidth*devicePixelRatio;
+  cv.height=180*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  draw();
+}
+
+function draw(){
+  const W=cv.offsetWidth,H=180;
+  const dark=matchMedia('(prefers-color-scheme:dark)').matches;
+  ctx.clearRect(0,0,W,H);
+  const textCol=dark?'#c2c0b6':'#3d3d3a';
+  const axisCol=dark?'#444':'#ddd';
+
+  const catP=parseFloat(sp.value)/100;
+  const rest=(1-catP)/2;
+
+  // Loss curve background
+  function toC(p,l){
+    return [40+(p)*(W-55), H-30-(l/5)*(H-50)];
+  }
+
+  // Axes
+  ctx.strokeStyle=axisCol;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(38,10);ctx.lineTo(38,H-28);ctx.lineTo(W-10,H-28);ctx.stroke();
+  ctx.fillStyle=textCol;ctx.font='11px sans-serif';
+  ctx.fillText('Cat probability →',W/2-40,H-12);
+  ctx.fillText('Loss',2,20);
+
+  // Curve: -log(p)
+  ctx.strokeStyle='#7F77DD';ctx.lineWidth=2;
+  ctx.beginPath();
+  let first=true;
+  for(let p=0.01;p<=0.99;p+=0.01){
+    const l=-Math.log(p);
+    const [cx,cy]=toC(p,l);
+    if(cy<5){first=true;continue;}
+    if(first){ctx.moveTo(cx,cy);first=false;}
+    else ctx.lineTo(cx,cy);
+  }
+  ctx.stroke();
+
+  // Current point
+  const loss=-Math.log(catP);
+  const [px,py]=toC(catP,loss);
+  const col=catP>0.7?'#1D9E75':catP>0.4?'#EF9F27':'#D85A30';
+
+  // Vertical dashed line
+  ctx.strokeStyle=col;ctx.lineWidth=1;ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,H-28);ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle=col;
+  ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=dark?'#111':'#fff';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.stroke();
+
+  // Label
+  ctx.fillStyle=textCol;ctx.font='11px sans-serif';
+  const lx=px>W-100?px-90:px+10;
+  ctx.fillText(`loss=${loss.toFixed(3)}`,lx,py-8);
+
+  // Bar chart below - probabilities
+  const barY=H-26;
+  const labels=['Cat','Dog','Bird'];
+  const probs=[catP,rest,rest];
+  const barColors=['#7F77DD','#9F9F9F','#9F9F9F'];
+  const bw=(W-55)/3-8;
+  probs.forEach((p,i)=>{
+    const bx=42+i*(bw+8);
+    const bh=p*40;
+    ctx.fillStyle=barColors[i]+(i===0?'':'66');
+    ctx.fillRect(bx,barY-bh,bw,bh);
+    ctx.fillStyle=textCol;ctx.font='10px sans-serif';
+    ctx.fillText(labels[i],bx+bw/2-8,barY+10);
+    ctx.fillText((p*100).toFixed(0)+'%',bx+bw/2-10,barY-bh-4);
+  });
+
+  // Update cards
+  document.getElementById('vp').textContent=(catP*100).toFixed(0)+'%';
+  document.getElementById('c1').textContent=(catP*100).toFixed(0)+'%';
+  document.getElementById('c1').style.color=col;
+  document.getElementById('c2').textContent=loss.toFixed(3);
+  document.getElementById('c2').style.color=col;
+  const v=catP>0.7?'Good ✓':catP>0.4?'Uncertain':'Very Wrong ✗';
+  document.getElementById('c3').textContent=v;
+  document.getElementById('c3').style.color=col;
+}
+
+sp.addEventListener('input',draw);
+window.addEventListener('resize',resize);
+resize();
+</script>
+</body>
